@@ -234,6 +234,8 @@ def delete_small_images(
             img = Image.open(path + "/" + file)
             width, height = img.size
             if width < min_width or height < min_height:
+                # save image name to folder
+                # img.save(path + "/" + "small" + "/" + file, "JPEG")
                 os.remove(path + "/" + file)
                 print("---> deleting file: ", file)
                 n_deleted = n_deleted + 1

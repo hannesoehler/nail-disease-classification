@@ -66,8 +66,8 @@ scrape_images(
     ],
     max_n=50,
 )
-#%%
-# rename images according to the subfolders they are in
+#%% rename images according to the subfolders they are in. removing broken
+# images that cannot be opened
 rename_scraped_images(dir_name="data/testset/imgs_scraped")
 #%%
 # copy all images from subfolders to a single folder imgs_scraped_clean
@@ -94,22 +94,19 @@ delete_duplicate_images(dir_name="data/testset/imgs_scraped_clean")
 #%% Yolov5 instance segmentation prediction
 
 # clone yolov5 repo
-Repo.clone_from("https://github.com/ultralytics/yolov5.git", "models/yolov5")
-
-# deleting folder imgs_original if it exists bc yolo wants to create this folder
-if os.path.exists("data/imgs_original"):
-    shutil.rmtree("data/imgs_original")
-
-#%%
+base_path = os.path.dirname(os.path.dirname(__file__))
+clone_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models/yolov5")
+Repo.clone_from("https://github.com/ultralytics/yolov5.git", clone_path)
 
 # directories and params for yolo prediction
 path = os.getcwd()
-os.chdir(path + "/models/yolov5/segment")
-weights_fdr = path + "/models/yolov5_best_model/best.pt"
-source_fdr = path + "/data/imgs_scraped_clean"
-project_fdr = path + "/data/imgs_original"
-name_fdr = path + "/data/imgs_original"
+os.chdir(clone_path + "/segment")
+weights_fdr = base_path + "/models/yolov5_best_model/best.pt"
+source_fdr = base_path + "/data/testset/imgs_scraped_clean"
+project_fdr = base_path + "/data/testset/imgs_original"
 conf_fdr = "0.6"  # can be adjusted to desired confidence level
+if os.path.exists(base_path + "/data/testset/imgs_original"):
+    shutil.rmtree(base_path + "/data/testset/imgs_original")
 
 # run yolov5 prediction
 subprocess.run(
@@ -122,7 +119,7 @@ subprocess.run(
         source_fdr,
         "--save-txt",
         "--name",
-        name_fdr,
+        project_fdr,
         "--project",
         project_fdr,
         "--conf",
@@ -135,11 +132,10 @@ os.chdir(path)
 #%% Crop images and update segmentation mask
 # TODO: Find the right value for max_extra_pad, see below
 
-path = os.getcwd()
-path_imgs_original = os.path.join(path, "data/imgs_scraped_clean/")
-path_txt_original = os.path.join(path, "data/imgs_original", "labels/")
-path_imgs_cropped = os.path.join(path, "data/imgs_cropped/")
-path_txt_cropped = os.path.join(path, "data/txt_cropped/")
+path_imgs_original = os.path.join(base_path, "data/testset/imgs_scraped_clean/")
+path_txt_original = os.path.join(base_path, "data/testset/imgs_original", "labels/")
+path_imgs_cropped = os.path.join(base_path, "data/testset/imgs_cropped/")
+path_txt_cropped = os.path.join(base_path, "data/testset/txt_cropped/")
 
 txt_original = os.listdir(path_txt_original)
 
@@ -195,12 +191,14 @@ for txt_file in txt_original:
 del_imagenames = delete_small_images(
     min_width=85,
     min_height=85,
-    dir_name="data/imgs_cropped",
+    dir_name="data/testset/imgs_cropped",
     return_del_filenames=True,
 )
 
 delete_txt_files_for_del_images(
     file_names_to_delete=del_imagenames,
-    dir_name="data/txt_cropped",
+    dir_name="data/testset/txt_cropped",
     return_del_filenames=False,
 )
+
+# %%

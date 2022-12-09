@@ -65,7 +65,8 @@ def rename_scraped_images(
 ):
     """Rename images according to the class they belong to (1st part of new
     name), the specific search term they were found under (2nd part), and an
-    ascending number under specific search term (3rd part).
+    ascending number under specific search term (3rd part). Images that cannot
+    be opened are deleted and not renamed.
 
     Args:
         dir_name (str, optional): folder in which to look for classes folders
@@ -90,21 +91,33 @@ def rename_scraped_images(
         for s_dir_name in synonyms:
             s_dir_path = d_dir_path + "/" + s_dir_name
             for index, imag in enumerate(os.listdir(s_dir_path)):
-                os.rename(
-                    s_dir_path + "/" + imag,
-                    s_dir_path
-                    + "/"
-                    + d_dir_name
-                    + "_"
-                    + s_dir_name
-                    + "_"
-                    + str(index)
-                    + ".jpg",
-                )
+                # try to open image; if valid image rename
+                try:
+                    img = Image.open(s_dir_path + "/" + imag)
+                    img.verify()
+                    os.rename(
+                        s_dir_path + "/" + imag,
+                        s_dir_path
+                        + "/"
+                        + d_dir_name
+                        + "_"
+                        + s_dir_name
+                        + "_"
+                        + str(index)
+                        + ".jpg",
+                    )
+                # if not, remove image
+                except:
+                    print(
+                        "Removed image that could not be opened:",
+                        s_dir_path + "/" + imag,
+                    )
+                    os.remove(s_dir_path + "/" + imag)
+                    continue
 
 
 def copy_all_imgs_to_one_folder(
-    old_folder="data/testset/imgs_scraped", new_folder="data/imgs_scraped_clean"
+    old_folder="data/testset/imgs_scraped", new_folder="data/testset/imgs_scraped_clean"
 ):
     """Copy all images from old folder (including subfolders) to new folder, to
     have all images in one folder.
