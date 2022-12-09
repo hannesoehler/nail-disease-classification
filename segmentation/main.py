@@ -30,47 +30,66 @@ from utils.read_show_crop_imgs import (
 # provided per list, the first search term will be used as the representative
 # name of the class and the others as synonyms for this class.
 
-if os.path.exists("data/imgs_scraped"):
-    shutil.rmtree("data/imgs_scraped")
-
 scrape_images(
-    dir_name="data/imgs_scraped",
+    dir_name="data/testset/imgs_scraped",
     searches=[
-        ["Nagel gesund", "Nagel normal", "Fingernagel", "Fußnagel"],
-        ["Onychomykose Nagel", "Nagelmykose", "Nagelpilz"],
-        ["Dystrophie Nagel", "Nageldystrophie", "Onychodystrophie"],
+        [
+            "Nagel gesund",
+            "Fingernagel",
+            "Fußnagel",
+            "ongle sain",
+        ],
+        [
+            "Onychomykose Nagel",
+            "Nagelmykose",
+            "Nagelpilz",
+            "mycose des ongles",
+        ],
+        [
+            "Dystrophie Nagel",
+            "Nageldystrophie",
+            "Onychodystrophie",
+            "dystrophie des ongles",
+        ],
         [
             "Melanonychie Nagel",
             "Streifenförmige Nagelpigmentierung",
             "Longitudinale Melanonychie",
+            "mélanonychie",
         ],
-        ["Onycholyse Nagel", "Nagelablösung", "Nagelabhebung"],
+        [
+            "Onycholyse Nagel",
+            "Nagelablösung",
+            "Nagelabhebung",
+            "Ongle décollement",
+        ],
     ],
-    max_n=5,
+    max_n=50,
 )
 #%%
-
 # rename images according to the subfolders they are in
-rename_scraped_images(dir_name="data/imgs_scraped")
-
+rename_scraped_images(dir_name="data/testset/imgs_scraped")
 #%%
-
 # copy all images from subfolders to a single folder imgs_scraped_clean
-copy_all_imgs_to_one_folder(new_folder="data/imgs_scraped_clean")
-#%%
+copy_all_imgs_to_one_folder(new_folder="data/testset/imgs_scraped_clean")
 
+#%%
 # delete very small images
-delete_small_images(min_width=85, min_height=85, dir_name="data/imgs_scraped_clean")
+delete_small_images(
+    min_width=85, min_height=85, dir_name="data/testset/imgs_scraped_clean"
+)
 
 # delete images with extreme aspect ratio
 delete_extreme_aspect_ratio_images(
-    max_aspect_ratio=2.4, min_aspect_ratio=0.417, dir_name="data/imgs_scraped_clean"
+    max_aspect_ratio=2.4,
+    min_aspect_ratio=0.417,
+    dir_name="data/testset/imgs_scraped_clean",
 )
 
 #%% delete duplicates using embeddings and cosine similarity
 
 # TODO: this is quite slow, maybe use a faster method
-delete_duplicate_images(dir_name="data/imgs_scraped_clean")
+delete_duplicate_images(dir_name="data/testset/imgs_scraped_clean")
 
 #%% Yolov5 instance segmentation prediction
 

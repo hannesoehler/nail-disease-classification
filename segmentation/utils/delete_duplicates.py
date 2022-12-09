@@ -142,13 +142,15 @@ def cosine_similarity(a, b):
     return dot(a, b) / (norm(a) * norm(b))
 
 
-def delete_duplicate_images(dir_name="data/imgs_scraped_clean"):
+def delete_duplicate_images(dir_name="data/testset/imgs_scraped_clean"):
 
     # Initialize image 2 vector model without GPU
     img2vec = Img2Vec(cuda=False)
 
     # path where images are located
-    path = os.getcwd() + "/" + dir_name
+    path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), dir_name
+    )
 
     # n images in directory
     n_total = len(os.listdir(path))
@@ -216,12 +218,14 @@ def delete_duplicate_images(dir_name="data/imgs_scraped_clean"):
 def delete_small_images(
     min_width=85,
     min_height=85,
-    dir_name="data/imgs_scraped_clean",
+    dir_name="data/testset/imgs_scraped_clean",
     return_del_filenames=False,
 ):
 
     # function for deleting very small images (less than 100 pixels)
-    path = os.getcwd() + "/" + dir_name
+    path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), dir_name
+    )
     n_total = len(os.listdir(path))
     n_deleted = 0
     file_name_deleted = []
@@ -245,10 +249,14 @@ def delete_small_images(
 
 
 def delete_extreme_aspect_ratio_images(
-    max_aspect_ratio=2.0, min_aspect_ratio=0.5, dir_name="data/imgs_scraped_clean"
+    max_aspect_ratio=2.0,
+    min_aspect_ratio=0.5,
+    dir_name="data/testset/imgs_scraped_clean",
 ):
 
-    path = os.getcwd() + "/" + dir_name
+    path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), dir_name
+    )
     n_total = len(os.listdir(path))
     n_deleted = 0
     for file in os.listdir(path):
@@ -269,12 +277,14 @@ def delete_extreme_aspect_ratio_images(
 
 def delete_txt_files_for_del_images(
     file_names_to_delete=[],
-    dir_name="data/txt_cropped",
+    dir_name="data/testset/txt_cropped",
     return_del_filenames=False,
 ):
 
     # function for deleting very small images (less than 100 pixels)
-    path = os.getcwd() + "/" + dir_name
+    path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), dir_name
+    )
 
     n_deleted = 0
     file_name_deleted = []
