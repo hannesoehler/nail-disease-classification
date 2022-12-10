@@ -42,7 +42,7 @@ def scrape_images(
     )
 
     # Seach for Urls and download images
-    for d_class in searches:
+    for i, d_class in enumerate(searches):
         # first element of d_class is going to be the representative name of the
         # class
         d_class_dir_name = d_class[0]
@@ -51,7 +51,10 @@ def scrape_images(
         for synonym in d_class:
             s_dest = path / d_class_dir_name / synonym
             s_dest.mkdir(exist_ok=True, parents=True)
-            urls = L(ddg_images(f"{synonym}", max_results=max_n)).itemgot("image")
+            if i == 3:  # more images for melanonychie
+                urls = L(ddg_images(f"{synonym}", max_results=50)).itemgot("image")
+            else:
+                urls = L(ddg_images(f"{synonym}", max_results=max_n)).itemgot("image")
             download_images(s_dest, urls=urls)
 
     # Removing images that might not have been downloaded properly

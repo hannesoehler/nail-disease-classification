@@ -34,37 +34,67 @@ scrape_images(
     dir_name="data/testset/imgs_scraped",
     searches=[
         [
-            "Nagel gesund",
-            "Fingernagel",
-            "Fußnagel",
-            "ongle sain",
+            "Nagel gesund",  # german
+            "Fingernagel",  # german
+            "Fußnagel",  # german
+            "ongle sain",  # french
+            "unghia sana",  # italian
+            "nagel gezond",  # dutch
+            "sunde negle",  # danish
+            "zdrowy paznokieć",  # polish # czech
+            "nehty zdravé",  # czech
+            "uñas sanas",  # spanish
         ],
         [
-            "Onychomykose Nagel",
-            "Nagelmykose",
-            "Nagelpilz",
-            "mycose des ongles",
+            "Onychomykose Nagel",  # german
+            "Nagelmykose",  # german
+            "Nagelpilz",  # german
+            "mycose des ongles",  # french
+            "fungo delle unghie",  # italian
+            "nagelschimmel",  # dutch
+            "neglesvamp",  # danish
+            "Grzyb paznokcia",  # polish
+            "Onychomycóza nehtů",  # czech
+            "onicomicosis",  # spanish
         ],
         [
-            "Dystrophie Nagel",
-            "Nageldystrophie",
-            "Onychodystrophie",
-            "dystrophie des ongles",
+            "Dystrophie Nagel",  # german
+            "Nageldystrophie",  # german
+            "Onychodystrophie",  # german
+            "dystrophie des ongles",  # french
+            "distrofia ungueale",  # italian
+            "nagel dystrofie",  # dutch
+            "Negledystrofi",  # danish
+            "dystrofia paznokci",  # polish
+            "Dystrofie nehtů",  # czech
+            "distrofia ungueal",  # spanish
         ],
         [
-            "Melanonychie Nagel",
-            "Streifenförmige Nagelpigmentierung",
-            "Longitudinale Melanonychie",
-            "mélanonychie",
+            "Melanonychie Nagel",  # german
+            "Streifenförmige Nagelpigmentierung",  # german
+            "Longitudinale Melanonychie",  # german
+            "mélanonychie",  # french
+            "melanonichia",  # italian
+            "Melanonychia-nagel",  # dutch
+            "melanonychia negl",  # danish
+            "melanonychia paznokcia",  # polish
+            "melanonychie",  # czech
+            "melanoniquia",  # spanish
         ],
         [
-            "Onycholyse Nagel",
-            "Nagelablösung",
-            "Nagelabhebung",
-            "Ongle décollement",
+            "Onycholyse Nagel",  # german
+            "Nagelablösung",  # german
+            "Nagelabhebung",  # german
+            "Ongle décollement",  # french
+            "unghia onicolisi",  # italian
+            "loslating van de nagel",  # dutch
+            "onykolyse",  # danish
+            "onycholiza paznokcia",  # polish
+            "onycholýza",  # czech
+            "onicólisis",  # spanish
         ],
     ],
-    max_n=50,
+    max_n=30,
 )
 #%% rename images according to the subfolders they are in. removing broken
 # images that cannot be opened
@@ -104,7 +134,7 @@ os.chdir(clone_path + "/segment")
 weights_fdr = base_path + "/models/yolov5_best_model/best.pt"
 source_fdr = base_path + "/data/testset/imgs_scraped_clean"
 project_fdr = base_path + "/data/testset/imgs_original"
-conf_fdr = "0.6"  # can be adjusted to desired confidence level
+conf_fdr = "0.4"  # can be adjusted to desired confidence level
 if os.path.exists(base_path + "/data/testset/imgs_original"):
     shutil.rmtree(base_path + "/data/testset/imgs_original")
 
@@ -189,8 +219,8 @@ for txt_file in txt_original:
 # TODO: set min_width and min_height to desired values
 
 del_imagenames = delete_small_images(
-    min_width=85,
-    min_height=85,
+    min_width=80,
+    min_height=80,
     dir_name="data/testset/imgs_cropped",
     return_del_filenames=True,
 )
@@ -200,5 +230,3 @@ delete_txt_files_for_del_images(
     dir_name="data/testset/txt_cropped",
     return_del_filenames=False,
 )
-
-# %%

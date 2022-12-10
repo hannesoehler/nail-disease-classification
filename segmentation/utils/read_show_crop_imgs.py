@@ -8,7 +8,7 @@ def read_image_label(path_to_img, path_to_txt, txt_row_obj=0, normilize=True):
 
     # read image
     image = cv2.imread(path_to_img)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  
 
     # read corresponding .txt file
     with open(path_to_txt, "r") as f:
