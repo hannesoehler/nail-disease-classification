@@ -1,0 +1,18 @@
+normal nail       19802
+nail dystrophy    16704
+onychomycosis      9642
+other disease      4968
+onycholysis        2914
+melanonychia       2523
+Name: disease, dtype: int64
+C:\Users\hanne\nail-disease-classification\data/trainsets/Virtual E Dataset\others\
+C:\Users\hanne\anaconda3\lib\site-packages\albumentations\augmentations\dropout\cutout.py:49: FutureWarning: Cutout has been deprecated. Please use CoarseDropout
+  warnings.warn(
+C:\Users\hanne\anaconda3\lib\site-packages\torch\cuda\amp\grad_scaler.py:118: UserWarning: torch.cuda.amp.GradScaler is enabled, but CUDA is not available.  Disabling.
+  warnings.warn("torch.cuda.amp.GradScaler is enabled, but CUDA is not available.  Disabling.")
+  0%|          | 0/869 [00:00<?, ?it/s]C:\Users\hanne\anaconda3\lib\site-packages\torch\amp\autocast_mode.py:202: UserWarning: User provided device_type of 'cuda', but CUDA is not available. Disabling
+  warnings.warn('User provided device_type of \'cuda\', but CUDA is not available. Disabling')
+  0%|          | 0/869 [01:36<?, ?it/s]
+[4mReloaded modules[24m: utils.torch_utils, configs.config, utils.wandb, utils.data, utils.dataloaders, utils.model, utils.loss, utils.metrics, train_val_fn
+GPU not available, CPU used
+[34m[1mwandb[39m[22m: [33mWARNING[39m Calling wandb.login() after wandb.init() has no effect.
