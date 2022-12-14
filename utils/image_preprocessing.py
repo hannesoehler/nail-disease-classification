@@ -4,8 +4,26 @@ from matplotlib import pyplot as plt
 from PIL import Image
 import glob
 from tqdm import tqdm
+import unicodedata
+import re
 
 class Image_preprocessing:
+    
+    def slugify(self, value, allow_unicode=False):
+        """
+        Taken from https://github.com/django/django/blob/master/django/utils/text.py
+        Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
+        dashes to single dashes. Remove characters that aren't alphanumerics,
+        underscores, or hyphens. Convert to lowercase. Also strip leading and
+        trailing whitespace, dashes, and underscores.
+        """
+        value = str(value)
+        if allow_unicode:
+            value = unicodedata.normalize('NFKC', value)
+        else:
+            value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+        value = re.sub(r'[^\w\s-]', '', value.lower())
+        return re.sub(r'[-\s]+', '-', value).strip('-_')
     
     def extract_rows(self, image, one_image=False):
     
@@ -41,7 +59,7 @@ class Image_preprocessing:
                 nail_images.append(nail_image)
         return nail_images        
     
-    def __call__(self, project_path, input_path, output_path):
+    def __call__(self, project_path, input_path, output_path, A2=False):
         
         if not os.path.exists(f'{project_path}/{output_path}'):
             os.mkdir(output_path)
@@ -50,6 +68,9 @@ class Image_preprocessing:
     
             image = plt.imread(path)
             image_name = path.split('\\')[-1].split('.')[0]
+            if A2:
+                image_name = image_name.split('#')[-1]
+            image_name = self.slugify(image_name)
             
             if not os.path.exists(f"{project_path}/{output_path}/{image_name}"):
                 os.mkdir(f"{output_path}/{image_name}")
