@@ -1,0 +1,42 @@
+{
+    "os": "Windows-10-10.0.22000-SP0",
+    "python": "3.9.7",
+    "heartbeatAt": "2022-12-14T18:26:57.765667",
+    "startedAt": "2022-12-14T18:26:50.247504",
+    "docker": null,
+    "cuda": null,
+    "args": null,
+    "state": "running",
+    "program": "C:\\Users\\hanne\\nail-disease-classification\\classification\\train.py",
+    "codePath": "classification\\train.py",
+    "git": {
+        "remote": "git@github.com:hannesoehler/nail-disease-classification.git",
+        "commit": "ac8c25ba3c88fdb607b7967e161380a931f098e4"
+    },
+    "email": "hoehler82@gmail.com",
+    "root": "C:/Users/hanne/nail-disease-classification",
+    "host": "DESKTOP-Q4DVIM9",
+    "username": "hanne",
+    "executable": "C:\\Users\\hanne\\anaconda3\\python.exe",
+    "cpu_count": 4,
+    "cpu_count_logical": 8,
+    "cpu_freq": {
+        "current": 1803.0,
+        "min": 0.0,
+        "max": 2304.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 1803.0,
+            "min": 0.0,
+            "max": 2304.0
+        }
+    ],
+    "disk": {
+        "total": 475.55956649780273,
+        "used": 267.39706802368164
+    },
+    "memory": {
+        "total": 31.790088653564453
+    }
+}
