@@ -1,3 +1,7 @@
 models/yolov5
 **/__pycache__/
 **/.DS_Store
+*.jpg
+*.jpeg
+*.png
+*.ipynb_checkpoints

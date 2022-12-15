@@ -1,0 +1,15 @@
+normal nail       19802
+nail dystrophy    16704
+onychomycosis      9642
+other disease      4968
+onycholysis        2914
+melanonychia       2523
+Name: disease, dtype: int64
+C:\Users\hanne\nail-disease-classification\data/trainsets/Virtual E Dataset\others\
+
+
+
+  0%|          | 3/869 [04:44<22:47:51, 94.77s/it]
+[34m[1mwandb[39m[22m: [33mWARNING[39m Calling wandb.login() after wandb.init() has no effect.
+[4mReloaded modules[24m: utils.torch_utils, configs.config, utils.data, utils.dataloaders, utils.model, utils.loss, utils.metrics, utils.wandb, train_val_fn
+GPU not available, CPU used

@@ -1,0 +1,51 @@
+normal nail       19802
+nail dystrophy    16704
+onychomycosis      9642
+other disease      4968
+onycholysis        2914
+melanonychia       2523
+Name: disease, dtype: int64
+C:\Users\hanne\nail-disease-classification\data/trainsets/Virtual E Dataset\others\
+fold  disease
+0     normal nail       7052
+      onychomycosis     2754
+      nail dystrophy    2104
+      other disease     1562
+      onycholysis        501
+      melanonychia       347
+1     other disease     1406
+      normal nail       1392
+      nail dystrophy    1157
+      onychomycosis      866
+      melanonychia       524
+      onycholysis        463
+2     normal nail       6181
+      nail dystrophy    4407
+      onycholysis       1266
+      onychomycosis     1259
+      other disease      705
+      melanonychia       532
+3     nail dystrophy    6252
+      onychomycosis     2592
+      normal nail       1241
+      other disease      694
+      melanonychia       576
+      onycholysis        393
+4     normal nail       3936
+      nail dystrophy    2784
+      onychomycosis     2171
+      other disease      601
+      melanonychia       544
+      onycholysis        291
+Name: disease, dtype: int64
+C:\Users\hanne\anaconda3\lib\site-packages\albumentations\augmentations\dropout\cutout.py:49: FutureWarning: Cutout has been deprecated. Please use CoarseDropout
+  warnings.warn(
+C:\Users\hanne\anaconda3\lib\site-packages\torch\cuda\amp\grad_scaler.py:118: UserWarning: torch.cuda.amp.GradScaler is enabled, but CUDA is not available.  Disabling.
+  warnings.warn("torch.cuda.amp.GradScaler is enabled, but CUDA is not available.  Disabling.")
+  0%|          | 0/660 [00:00<?, ?it/s]C:\Users\hanne\anaconda3\lib\site-packages\torch\amp\autocast_mode.py:202: UserWarning: User provided device_type of 'cuda', but CUDA is not available. Disabling
+  warnings.warn('User provided device_type of \'cuda\', but CUDA is not available. Disabling')
+
+  0%|          | 1/660 [01:34<17:18:13, 94.53s/it]
+[4mReloaded modules[24m: utils.torch_utils, utils.data, utils.dataloaders, utils.model, utils.loss, utils.metrics, train_val_fn, configs.config, utils.wandb
+GPU not available, CPU used
+If you want to use your W&B account, get your W&B access token from here: https://wandb.ai/authorize
