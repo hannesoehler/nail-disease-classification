@@ -1,6 +1,6 @@
 import wandb
 import os
-from configs.config import CFG
+from configs.train_config import CFG
 
 def use_wandb():
 

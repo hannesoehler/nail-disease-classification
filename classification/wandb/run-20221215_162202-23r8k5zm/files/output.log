@@ -1,0 +1,12 @@
+
+  0%|          | 0/8 [00:00<?, ?it/s]
+onycholysis       237
+normal nail       220
+onychomycosis     200
+melanonychia      185
+nail dystrophy    127
+Name: disease, dtype: int64
+
+
+ 12%|█▎        | 1/8 [02:22<16:39, 142.75s/it]
+[4mReloaded modules[24m: utils.torch_utils, configs.train_config, utils.wandb, configs.test_config, utils.dataloaders, utils.model, utils.loss, utils.metrics, train_val_fn, utils.data

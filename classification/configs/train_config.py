@@ -5,6 +5,7 @@ class CFG:
                  'dataset B1', 'dataset B2', 'dataset C', 'dataset D', 'Virtual E Dataset']
     train_with_e_dataset = True
     output_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),'classification/outputs')
+    model_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),'models/classification')
     num_workers = 0
     seed = 0
     num_classes = 6
@@ -18,7 +19,7 @@ class CFG:
     
     model_name = 'resnet152'
     epochs = 10
-    lr = 5e-4 #1e-5
+    lr = 5e-4
     min_lr = 1e-6
     weight_decay = 1e-6
     batch_size_train = 64

@@ -9,7 +9,8 @@ from torch.optim import Adam, AdamW, SGD
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, CosineAnnealingLR, OneCycleLR
 import numpy as np
 import gc
-from configs.config import CFG
+from configs.train_config import CFG
+from configs.test_config import CFG_test
 from utils.dataloaders import ImageData
 from utils.model import Nail_classifier
 from utils.loss import FocalLoss
@@ -39,7 +40,7 @@ def valid_fn(model, val_loader, criterion, device):
     val_losses = AverageMeter()
     model.eval()
     with torch.no_grad():
-        for i, (data, target) in enumerate(val_loader):      
+        for i, (data, target) in enumerate(tqdm(val_loader)):      
             target = target.to(device)
             data = data.float().to(device)
             
@@ -78,7 +79,7 @@ def valid_fn(model, val_loader, criterion, device):
     return val_losses, output_val, prob_val, target_val
 
 
-def train_loop(train_df, class_dict, fold, device):
+def train_loop(train_df, fold, device):
     
     train_fold = train_df.loc[train_df['fold']!=fold].reset_index(drop=True)
     class_weights = 1 / (train_fold.label.value_counts() / len(train_fold))
@@ -142,9 +143,9 @@ def train_loop(train_df, class_dict, fold, device):
         f1_lst.append(f1)
         if f1 >= np.max(f1_lst):
             if CFG.use_folds:
-                torch.save(model.state_dict(), f'{CFG.output_path}/{CFG.model_name}_fold_{fold}.pt')
+                torch.save(model.state_dict(), f'{CFG.model_path}/{CFG.model_name}_fold_{fold}.pt')
             else:
-                torch.save(model.state_dict(), f'{CFG.output_path}/{CFG.model_name}.pt')
+                torch.save(model.state_dict(), f'{CFG.model_path}/{CFG.model_name}.pt')
             val_fold['prediction'] = output_val
             val_fold['probability'] = prob_val
     
@@ -152,3 +153,27 @@ def train_loop(train_df, class_dict, fold, device):
     gc.collect()
     
     return val_fold
+
+
+def test_loop(val_df, device):
+    
+    valdata = ImageData(val_df, CFG_test)
+    val_loader = DataLoader(dataset=valdata, batch_size=CFG_test.batch_size_val, shuffle=False,
+                        num_workers=CFG_test.num_workers, pin_memory=True)
+    
+    model = Nail_classifier(CFG)
+    model = model.to(device)
+    model.load_state_dict(torch.load(f'{CFG_test.model_path}/{CFG_test.model_name}.pt', map_location=torch.device(device)))   
+    
+    criterion = nn.CrossEntropyLoss(weight=None)
+    criterion = criterion.to(device)
+    
+    val_losses, output_val, prob_val, target_val = valid_fn(model, val_loader, criterion, device)
+    
+    val_df['prediction'] = output_val
+    val_df['probability'] = prob_val
+               
+    torch.cuda.empty_cache()
+    gc.collect()
+    
+    return val_df

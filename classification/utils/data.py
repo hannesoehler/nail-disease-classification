@@ -3,12 +3,15 @@ from glob import glob
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import StratifiedGroupKFold
-from configs.config import CFG
+from configs.train_config import CFG
 
 
-def construct_train_df(image_paths):
+def construct_train_df(image_paths, train=True):
     
-    base_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),'data/trainsets/')
+    if train:
+        base_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),'data/trainsets/')
+    else:
+        base_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),'data/testset/')
     images_lst = []
     class_dict = {}
     
