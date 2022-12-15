@@ -8,7 +8,7 @@ def read_image_label(path_to_img, path_to_txt, txt_row_obj=0, normilize=True):
 
     # read image
     image = cv2.imread(path_to_img)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     # read corresponding .txt file
     with open(path_to_txt, "r") as f:
@@ -28,7 +28,7 @@ def read_image_label(path_to_img, path_to_txt, txt_row_obj=0, normilize=True):
     return image, polygon_nail.astype(int), obj_class
 
 
-def show_image_mask(img, polygon_nail):
+def get_image_mask(img, polygon_nail, display_mask=False):
 
     # Create zero array for mask
     mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
@@ -36,21 +36,23 @@ def show_image_mask(img, polygon_nail):
     # Draw polygon_nail on the image and mask
     cv2.fillPoly(mask, pts=[polygon_nail], color=(255, 255, 255))
 
-    # Plot image with mask
-    fig = plt.figure(figsize=(22, 18))
-    axes = fig.subplots(nrows=1, ncols=2)
-    axes[0].imshow(img)
-    axes[1].imshow(mask, cmap="Greys_r")
-    axes[0].set_title("Original image with mask")
-    axes[1].set_title("Mask")
-    plt.show()
+    if display_mask:
+        # Plot image with mask
+        fig = plt.figure(figsize=(22, 18))
+        axes = fig.subplots(nrows=1, ncols=2)
+        axes[0].imshow(img)
+        axes[1].imshow(mask, cmap="Greys_r")
+        axes[0].set_title("Original image with mask")
+        axes[1].set_title("Mask")
+        plt.show()
+        # TL added this
+        masked = cv2.bitwise_and(img, img, mask=mask)
+        # Plot image with mask
+        fig = plt.figure(figsize=(22, 18))
+        axes = fig.subplots(nrows=1, ncols=1)
+        axes.imshow(masked)
 
-    # TL
-    masked = cv2.bitwise_and(img, img, mask=mask)
-    # Plot image with mask
-    fig = plt.figure(figsize=(22, 18))
-    axes = fig.subplots(nrows=1, ncols=1)
-    axes.imshow(masked)
+    return mask
 
 
 def crop_image_label(
