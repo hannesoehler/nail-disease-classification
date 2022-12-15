@@ -1,0 +1,4 @@
+
+[34m[1mwandb[39m[22m: [33mWARNING[39m Calling wandb.login() after wandb.init() has no effect.
+[4mReloaded modules[24m: utils.torch_utils, configs.train_config, utils.wandb, configs.test_config, utils.dataloaders, utils.model, utils.loss, utils.metrics, train_val_fn, utils.data
+GPU not available, CPU used

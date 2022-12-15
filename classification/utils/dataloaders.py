@@ -2,7 +2,7 @@ import albumentations
 import cv2
 import numpy as np
 from torch.utils.data import Dataset
-from configs.config import CFG
+from configs.train_config import CFG
 
 
 class Transform:
