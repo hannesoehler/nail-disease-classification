@@ -1,6 +1,6 @@
 import torch.nn as nn
 import timm
-from configs.config import CFG
+from configs.train_config import CFG
 
 
 class Nail_classifier(nn.Module):

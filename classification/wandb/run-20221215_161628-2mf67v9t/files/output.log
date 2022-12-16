@@ -1,0 +1,12 @@
+onycholysis       237
+normal nail       220
+onychomycosis     200
+melanonychia      185
+nail dystrophy    127
+Name: disease, dtype: int64
+C:\Users\hanne\nail-disease-classification\data/testset/imgs_scraped_final\onychomycosis\
+[4mReloaded modules[24m: utils.torch_utils, configs.train_config, utils.wandb, utils.dataloaders, utils.model, utils.loss, utils.metrics, train_val_fn, utils.data, configs.test_config
+GPU not available, CPU used
+C:\Users\hanne\anaconda3\lib\site-packages\albumentations\augmentations\dropout\cutout.py:49: FutureWarning: Cutout has been deprecated. Please use CoarseDropout
+  warnings.warn(
+[34m[1mwandb[39m[22m: [33mWARNING[39m Calling wandb.login() after wandb.init() has no effect.
