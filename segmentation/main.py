@@ -406,11 +406,34 @@ plt.hist(prop_affected_list_pred, bins=20)
 
 # %% Difference between ground truth and prediction per image
 import matplotlib.pyplot as plt
+from sklearn.metrics import mean_absolute_error
 
-fig = plt.figure(figsize=(22, 18))
-axes = fig.subplots(nrows=1, ncols=2)
+fig = plt.figure(figsize=(18, 10))
+axes = fig.subplots(nrows=1, ncols=3)
 
 axes[0].hist(np.array(prop_affected_list) - np.array(prop_affected_list_pred), bins=20)
+axes[1].hist(
+    np.abs((np.array(prop_affected_list) - np.array(prop_affected_list_pred))), bins=20
+)
+
+mean_absolute_error_ = mean_absolute_error(prop_affected_list, prop_affected_list_pred)
+
+# plot mean absolute error_ on histogram
+axes[2].bar(
+    mean_absolute_error_,
+    align="center",
+    # width=-0.1,
+    height=mean_absolute_error_,
+)
+axes[2].set_xticklabels([])
+
+# add title and axis names
+axes[0].set_title("Difference GT and PRED prop affected per image")
+axes[1].set_title("Abs Difference GT and PRED prop affected per image")
+axes[2].set_title("Mean Absolute Error")
+
+# %%
+# mean absolute error of
 
 
 # %%
