@@ -249,36 +249,47 @@ path_val_txt_area_gt = os.path.join(
     base_path, "data/valset/segmentation/ground_truth/area_affected/labels/"
 )
 
-# TODO: currently it only works for one segmentation per image, but for desease there
-# can be multiple. Need to fix this.
+files_val_txt_nail_gt = os.listdir(path_val_txt_nail_gt)
+files_val_txt_nail_gt = [f for f in files_val_txt_nail_gt if not f.startswith(".")]
 
-txt_original = os.listdir(path_val_txt_nail_gt)
-img_original = os.listdir(path_val_imgs_nail_gt)
+files_val_txt_area_gt = os.listdir(path_val_txt_area_gt)
+files_val_txt_area_gt = [f for f in files_val_txt_area_gt if not f.startswith(".")]
 
 dict_prop_affected = {}
 
-for txt_file in txt_original:
+for txt_file in files_val_txt_area_gt:
 
     # image file name is the same as txt file name
     img_file = txt_file[:-4] + ".jpg"
 
+    # number of lines is the number of objects (nails) in the image
+    with open(path_val_txt_area_gt + txt_file, "r") as f:
+        nareas_affected = len(f.readlines())
+
+    # assuming there is only one nail per image
     imag_nail_gt, polygon_nail_gt, obj_class = read_image_label(
-        path_val_imgs_nail_gt + img_file, path_val_txt_nail_gt + txt_file, cur_obj
+        path_val_imgs_nail_gt + img_file, path_val_txt_nail_gt + txt_file, txt_row_obj=0
     )
-
-    imag_area_gt, polygon_area_gt, obj_class = read_image_label(
-        path_val_imgs_area_gt + img_file, path_val_txt_area_gt + txt_file, cur_obj
-    )
-
     nail_gt_mask = get_image_mask(imag_nail_gt, polygon_nail_gt)
-    area_gt_mask = get_image_mask(imag_area_gt, polygon_area_gt)
 
-    # ground truth propotion of nail affected by fungus
-    proportion_affected = len(area_gt_mask[area_gt_mask > 0]) / len(
-        nail_gt_mask[nail_gt_mask > 0]
-    )
+    area_gt_mask = []
+    for cur_area in range(nareas_affected):
 
-    # dict append image name and proportion affected
+        imag_area_gt, polygon_area_gt, obj_class = read_image_label(
+            path_val_imgs_area_gt + img_file,
+            path_val_txt_area_gt + txt_file,
+            cur_area,
+        )
+        area_gt_mask.append(get_image_mask(imag_area_gt, polygon_area_gt))
+
+    # combined version of all ground truth area affected masks
+    area_gt_mask_combined = np.sum(area_gt_mask, axis=0)
+
+    # ground truth propotion of whole nail affected
+    proportion_affected = np.sum(
+        area_gt_mask_combined[area_gt_mask_combined > 0]
+    ) / np.sum(nail_gt_mask[nail_gt_mask > 0])
+
     dict_prop_affected.update({img_file: proportion_affected})
 
 # average proportion of nail affected by fungus in ground truth validation images
@@ -295,6 +306,16 @@ import matplotlib.pyplot as plt
 
 # plot histogram of prop_affected_list
 plt.hist(prop_affected_list, bins=20)
+
+
+# %%
+import matplotlib.pyplot as plt
+
+fig = plt.figure(figsize=(22, 18))
+axes = fig.subplots(nrows=1, ncols=2)
+
+polygon_area_gt_all_areas = area_gt_mask[0] + area_gt_mask[1]
+axes[0].imshow(polygon_area_gt_all_areas)
 
 
 # %%
