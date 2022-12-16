@@ -232,7 +232,8 @@ delete_txt_files_for_del_images(
     return_del_filenames=False,
 )
 
-#%% Area affected segmentation: determine proportion of nail affected by fungus in ground truth validation images
+#%% Area affected segmentation GROUND TRUTH: determine proportion of nail
+# affected by fungus in ground truth validation images
 
 base_path = os.path.dirname(os.path.dirname(__file__))
 
@@ -308,14 +309,91 @@ import matplotlib.pyplot as plt
 plt.hist(prop_affected_list, bins=20)
 
 
-# %%
+# %% Plotting ground truth validation images area affected
 import matplotlib.pyplot as plt
 
 fig = plt.figure(figsize=(22, 18))
 axes = fig.subplots(nrows=1, ncols=2)
 
-polygon_area_gt_all_areas = area_gt_mask[0] + area_gt_mask[1]
+polygon_area_gt_all_areas = area_gt_mask[0] + area_gt_mask[0]
 axes[0].imshow(polygon_area_gt_all_areas)
 
+#%% Area affected segmentation PREDICTIONS: determine proportion of nail
+# affected by fungus in predictions for validation images
+
+base_path = os.path.dirname(os.path.dirname(__file__))
+
+path_val_imgs_nail_pred = os.path.join(
+    base_path, "data/valset/segmentation/prediction/nail/images/"
+)
+path_val_txt_nail_pred = os.path.join(
+    base_path, "data/valset/segmentation/prediction/nail/labels/"
+)
+path_val_imgs_area_pred = os.path.join(
+    base_path, "data/valset/segmentation/prediction/area_affected/images/"
+)
+path_val_txt_area_pred = os.path.join(
+    base_path, "data/valset/segmentation/prediction/area_affected/labels/"
+)
+
+files_val_txt_nail_pred = os.listdir(path_val_txt_nail_pred)
+files_val_txt_nail_pred = [f for f in files_val_txt_nail_pred if not f.startswith(".")]
+
+files_val_txt_area_pred = os.listdir(path_val_txt_area_pred)
+files_val_txt_area_pred = [f for f in files_val_txt_area_pred if not f.startswith(".")]
+
+dict_prop_affected_pred = {}
+
+for txt_file_pred in files_val_txt_area_pred:
+
+    # image file name is the same as txt file name
+    img_file_pred = txt_file_pred[:-4] + ".jpg"
+
+    # number of lines is the number of objects (nails) in the image
+    with open(path_val_txt_area_pred + txt_file_pred, "r") as f:
+        nareas_affected_pred = len(f.readlines())
+
+    # assuming there is only one nail per image
+    imag_nail_pred, polygon_nail_pred, obj_class_pred = read_image_label(
+        path_val_imgs_nail_pred + img_file_pred,
+        path_val_txt_nail_pred + txt_file_pred,
+        txt_row_obj=0,
+    )
+    nail_pred_mask = get_image_mask(imag_nail_pred, polygon_nail_pred)
+
+    area_gt_mask_pred = []
+    for cur_area_pred in range(nareas_affected_pred):
+
+        imag_area_pred, polygon_area_pred, obj_class_pred = read_image_label(
+            path_val_imgs_area_pred + img_file_pred,
+            path_val_txt_area_pred + txt_file_pred,
+            cur_area_pred,
+        )
+        area_gt_mask_pred.append(get_image_mask(imag_area_pred, polygon_area_pred))
+
+    # combined version of all ground truth area affected masks
+    area_gt_mask_pred_combined = np.sum(area_gt_mask_pred, axis=0)
+
+    # ground truth propotion of whole nail affected
+    proportion_affected = np.sum(
+        area_gt_mask_pred_combined[area_gt_mask_pred_combined > 0]
+    ) / np.sum(nail_pred_mask[nail_pred_mask > 0])
+
+    dict_prop_affected_pred.update({img_file_pred: proportion_affected})
+
+# average proportion of nail affected by fungus in ground truth validation images
+prop_affected_list_pred = list(dict_prop_affected_pred.values())
+
+# descriptive statistics of prop_affected_list_pred
+print("Mean: ", np.mean(prop_affected_list_pred))
+print("Median: ", np.median(prop_affected_list_pred))
+print("Std: ", np.std(prop_affected_list_pred))
+print("Min: ", np.min(prop_affected_list_pred))
+print("Max: ", np.max(prop_affected_list_pred))
+
+import matplotlib.pyplot as plt
+
+# plot histogram of prop_affected_list_pred
+plt.hist(prop_affected_list_pred, bins=20)
 
 # %%
