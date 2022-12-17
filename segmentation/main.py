@@ -326,6 +326,9 @@ base_path = os.path.dirname(os.path.dirname(__file__))
 path_val_imgs_nail_pred = os.path.join(
     base_path, "data/valset/segmentation/prediction/nail/images/"
 )
+
+# TODO: currently I put the ground truth txt files in the prediction folder as we don't have
+# the predictions yet, so need to change this later
 path_val_txt_nail_pred = os.path.join(
     base_path, "data/valset/segmentation/prediction/nail/labels/"
 )
@@ -422,7 +425,6 @@ mean_absolute_error_ = mean_absolute_error(prop_affected_list, prop_affected_lis
 axes[2].bar(
     mean_absolute_error_,
     align="center",
-    # width=-0.1,
     height=mean_absolute_error_,
 )
 axes[2].set_xticklabels([])
@@ -432,8 +434,14 @@ axes[0].set_title("Difference GT and PRED prop affected per image")
 axes[1].set_title("Abs Difference GT and PRED prop affected per image")
 axes[2].set_title("Mean Absolute Error")
 
-# %%
-# mean absolute error of
+# %% Dice coefficient
 
 
-# %%
+def DICE_COE(mask1, mask2):
+    intersect = np.sum(mask1 * mask2)
+    fsum = np.sum(mask1)
+    ssum = np.sum(mask2)
+    dice = (2 * intersect) / (fsum + ssum)
+    dice = np.mean(dice)
+    dice = round(dice, 3)  # for easy reading
+    return dice
