@@ -321,6 +321,19 @@ axes[0].imshow(polygon_area_gt_all_areas)
 #%% Area affected segmentation PREDICTIONS: determine proportion of nail
 # affected by fungus in predictions for validation images
 
+
+def DICE_COE(mask1, mask2):
+    mask1[mask1 > 0] = 1  # bc mask was 255
+    mask2[mask2 > 0] = 1  # bc mask was 255
+    intersect = np.sum(mask1 * mask2)
+    fsum = np.sum(mask1)
+    ssum = np.sum(mask2)
+    dice = (2 * intersect) / (fsum + ssum)
+    dice = np.mean(dice)
+    dice = round(dice, 3)  # for easy reading
+    return dice
+
+
 base_path = os.path.dirname(os.path.dirname(__file__))
 
 path_val_imgs_nail_pred = os.path.join(
@@ -346,6 +359,7 @@ files_val_txt_area_pred = os.listdir(path_val_txt_area_pred)
 files_val_txt_area_pred = [f for f in files_val_txt_area_pred if not f.startswith(".")]
 
 dict_prop_affected_pred = {}
+dict_dice_score = {}
 
 # looping over ground truth txt files bc in prediction some txt files are missing due to False Negatives
 for txt_file_pred in files_val_txt_area_gt:  # files_val_txt_area_pred
@@ -353,6 +367,8 @@ for txt_file_pred in files_val_txt_area_gt:  # files_val_txt_area_pred
     # image file name is the same as txt file name
     img_file_pred = txt_file_pred[:-4] + ".jpg"
 
+    # if txt file for affected area exists (i.e., not a False negative), then
+    # proportion of nail affected is calculated
     try:
         # number of lines is the number of objects (nails) in the image
         with open(path_val_txt_area_pred + txt_file_pred, "r") as f:
@@ -386,10 +402,16 @@ for txt_file_pred in files_val_txt_area_gt:  # files_val_txt_area_pred
 
         dict_prop_affected_pred.update({img_file_pred: proportion_affected})
 
+        # calculate DICE coefficient
+        dice_score = DICE_COE(nail_pred_mask, area_gt_mask_pred_combined)
+        dict_dice_score.update({img_file_pred: dice_score})
+
     except:
-        # if False negative, then proportion of nail affected is 0
+        # if False negative, then proportion of nail affected and dice score is 0
         proportion_affected = 0
+        dice_score = 0
         dict_prop_affected_pred.update({img_file_pred: proportion_affected})
+        dict_dice_score.update({img_file_pred: dice_score})
         print("File not found bc Fale Negative: ", txt_file_pred)
 
 # average proportion of nail affected by fungus in ground truth validation images
@@ -433,15 +455,3 @@ axes[2].set_xticklabels([])
 axes[0].set_title("Difference GT and PRED prop affected per image")
 axes[1].set_title("Abs Difference GT and PRED prop affected per image")
 axes[2].set_title("Mean Absolute Error")
-
-# %% Dice coefficient
-
-
-def DICE_COE(mask1, mask2):
-    intersect = np.sum(mask1 * mask2)
-    fsum = np.sum(mask1)
-    ssum = np.sum(mask2)
-    dice = (2 * intersect) / (fsum + ssum)
-    dice = np.mean(dice)
-    dice = round(dice, 3)  # for easy reading
-    return dice
