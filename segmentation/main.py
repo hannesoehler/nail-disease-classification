@@ -287,9 +287,11 @@ for txt_file in files_val_txt_area_gt:
     area_gt_mask_combined = np.sum(area_gt_mask, axis=0)
 
     # ground truth propotion of whole nail affected
-    proportion_affected = np.sum(
+    proportion_affected = len(  # corrected bug, this should be len not np.sum
         area_gt_mask_combined[area_gt_mask_combined > 0]
-    ) / np.sum(nail_gt_mask[nail_gt_mask > 0])
+    ) / len(
+        nail_gt_mask[nail_gt_mask > 0]
+    )  # corrected bug, this should be len not np.sum
 
     dict_prop_affected.update({img_file: proportion_affected})
 
@@ -396,9 +398,11 @@ for txt_file_pred in files_val_txt_area_gt:  # files_val_txt_area_pred
         area_gt_mask_pred_combined = np.sum(area_gt_mask_pred, axis=0)
 
         # ground truth propotion of whole nail affected
-        proportion_affected = np.sum(
+        proportion_affected = len(  # corrected bug, this should be len not np.sum
             area_gt_mask_pred_combined[area_gt_mask_pred_combined > 0]
-        ) / np.sum(nail_pred_mask[nail_pred_mask > 0])
+        ) / len(
+            nail_pred_mask[nail_pred_mask > 0]
+        )  # corrected bug, this should be len not np.sum
 
         dict_prop_affected_pred.update({img_file_pred: proportion_affected})
 
@@ -455,3 +459,5 @@ axes[2].set_xticklabels([])
 axes[0].set_title("Difference GT and PRED prop affected per image")
 axes[1].set_title("Abs Difference GT and PRED prop affected per image")
 axes[2].set_title("Mean Absolute Error")
+
+# %%
