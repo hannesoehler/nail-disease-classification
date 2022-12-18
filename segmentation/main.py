@@ -4,7 +4,10 @@ import os
 import shutil
 import subprocess
 import numpy as np
+import cv2
 from git.repo.base import Repo
+import matplotlib.pyplot as plt
+from sklearn.metrics import mean_absolute_error
 
 from utils.scrape_images import (
     scrape_images,
@@ -233,7 +236,8 @@ delete_txt_files_for_del_images(
 )
 
 #%% Area affected segmentation GROUND TRUTH: determine proportion of nail
-# affected by fungus in ground truth validation images
+# affected by fungus in ground truth validation images (ground truth area
+# affected, ground truth nail)
 
 base_path = os.path.dirname(os.path.dirname(__file__))
 
@@ -257,6 +261,9 @@ files_val_txt_area_gt = os.listdir(path_val_txt_area_gt)
 files_val_txt_area_gt = [f for f in files_val_txt_area_gt if not f.startswith(".")]
 
 dict_prop_affected = {}
+dict_area_affected_gt_mask_combined = (
+    {}
+)  # to later calculate dice score ground truth vs predicted area affected
 
 for txt_file in files_val_txt_area_gt:
 
@@ -293,9 +300,19 @@ for txt_file in files_val_txt_area_gt:
         nail_gt_mask[nail_gt_mask > 0]
     )  # corrected bug, this should be len not np.sum
 
+    # if ground truth proportion affected is greater than 1 (bigger than the
+    # ground truth nail itself), then it is set to 1. This was not observed.
+    if proportion_affected > 1:
+        proportion_affected = 1
+
     dict_prop_affected.update({img_file: proportion_affected})
 
-# average proportion of nail affected by fungus in ground truth validation images
+    # save image name and mask to later calculate dice score ground truth vs
+    # prediction area affected
+    dict_area_affected_gt_mask_combined.update({img_file: area_gt_mask_combined})
+
+# average proportion of nail affected by fungus in ground truth validation
+# images
 prop_affected_list = list(dict_prop_affected.values())
 
 # descriptive statistics of prop_affected_list
@@ -305,23 +322,18 @@ print("Std: ", np.std(prop_affected_list))
 print("Min: ", np.min(prop_affected_list))
 print("Max: ", np.max(prop_affected_list))
 
-import matplotlib.pyplot as plt
-
 # plot histogram of prop_affected_list
 plt.hist(prop_affected_list, bins=20)
 
-
-# %% Plotting ground truth validation images area affected
-import matplotlib.pyplot as plt
-
-fig = plt.figure(figsize=(22, 18))
-axes = fig.subplots(nrows=1, ncols=2)
-
-polygon_area_gt_all_areas = area_gt_mask[0] + area_gt_mask[0]
-axes[0].imshow(polygon_area_gt_all_areas)
+# Plotting ground truth validation images area affected
+# import matplotlib.pyplot as plt
+# fig = plt.figure(figsize=(22, 18)) axes = fig.subplots(nrows=1, ncols=2)
+# polygon_area_gt_all_areas = area_gt_mask[0] + area_gt_mask[0]
+# axes[0].imshow(polygon_area_gt_all_areas)
 
 #%% Area affected segmentation PREDICTIONS: determine proportion of nail
-# affected by fungus in predictions for validation images
+# affected by fungus in predictions for validation images (predicted area
+# affected, predicted nail)
 
 
 def DICE_COE(mask1, mask2):
@@ -342,8 +354,6 @@ path_val_imgs_nail_pred = os.path.join(
     base_path, "data/valset/segmentation/prediction/nail/images/"
 )
 
-# TODO: currently I put the ground truth txt files in the prediction folder as we don't have
-# the predictions yet, so need to change this later
 path_val_txt_nail_pred = os.path.join(
     base_path, "data/valset/segmentation/prediction/nail/labels/"
 )
@@ -361,9 +371,13 @@ files_val_txt_area_pred = os.listdir(path_val_txt_area_pred)
 files_val_txt_area_pred = [f for f in files_val_txt_area_pred if not f.startswith(".")]
 
 dict_prop_affected_pred = {}
-dict_dice_score = {}
+dict_dice_score = {}  # for dice score predicted area affected vs predicted whole nail
+dict_area_affected_mask_pred_combined = (
+    {}
+)  # to later calculate dice score ground truth vs predicted area affected
 
-# looping over ground truth txt files bc in prediction some txt files are missing due to False Negatives
+# looping over ground truth txt files bc for prediction some txt files are
+# missing due to False Negatives
 for txt_file_pred in files_val_txt_area_gt:  # files_val_txt_area_pred
 
     # image file name is the same as txt file name
@@ -376,7 +390,8 @@ for txt_file_pred in files_val_txt_area_gt:  # files_val_txt_area_pred
         with open(path_val_txt_area_pred + txt_file_pred, "r") as f:
             nareas_affected_pred = len(f.readlines())
 
-        # assuming there is only one nail per image
+        # assuming there is only one nail per image, taking row 0 (this would be
+        # a problem if there were more than one nail, here it is fine)
         imag_nail_pred, polygon_nail_pred, obj_class_pred = read_image_label(
             path_val_imgs_nail_pred + img_file_pred,
             path_val_txt_nail_pred + txt_file_pred,
@@ -384,6 +399,7 @@ for txt_file_pred in files_val_txt_area_gt:  # files_val_txt_area_pred
         )
         nail_pred_mask = get_image_mask(imag_nail_pred, polygon_nail_pred)
 
+        # go through all affected areas in the image
         area_gt_mask_pred = []
         for cur_area_pred in range(nareas_affected_pred):
 
@@ -394,31 +410,56 @@ for txt_file_pred in files_val_txt_area_gt:  # files_val_txt_area_pred
             )
             area_gt_mask_pred.append(get_image_mask(imag_area_pred, polygon_area_pred))
 
-        # combined version of all ground truth area affected masks
+        # combined version of all predicted area affected masks
         area_gt_mask_pred_combined = np.sum(area_gt_mask_pred, axis=0)
 
-        # ground truth propotion of whole nail affected
+        # predicted propotion of whole nail affected
         proportion_affected = len(  # corrected bug, this should be len not np.sum
             area_gt_mask_pred_combined[area_gt_mask_pred_combined > 0]
         ) / len(
             nail_pred_mask[nail_pred_mask > 0]
         )  # corrected bug, this should be len not np.sum
 
+        # if predicted proportion affected is greater than 1 (bigger than the
+        # predicted nail itself), then it is set to 1
+        if proportion_affected > 1:
+            proportion_affected = 1
+
         dict_prop_affected_pred.update({img_file_pred: proportion_affected})
 
-        # calculate DICE coefficient
+        # calculate DICE coefficient for predicted area affected vs predicted
+        # whole nail
         dice_score = DICE_COE(nail_pred_mask, area_gt_mask_pred_combined)
         dict_dice_score.update({img_file_pred: dice_score})
 
-    except:
-        # if False negative, then proportion of nail affected and dice score is 0
+        # save image name and mask to later calculate dice score ground truth vs
+        # prediction area affected
+        dict_area_affected_mask_pred_combined.update(
+            {img_file_pred: area_gt_mask_pred_combined}
+        )
+
+    except FileNotFoundError:
+        # if False negative, then proportion of nail affected and dice score is
+        # 0
         proportion_affected = 0
         dice_score = 0
         dict_prop_affected_pred.update({img_file_pred: proportion_affected})
         dict_dice_score.update({img_file_pred: dice_score})
+
+        # save image name and mask to later calculate dice score ground truth vs
+        # prediction area affected create a mask of zeros with the same size as
+        # the image, bc no prediction
+        image_for_dice_mask_zeros = cv2.imread(path_val_imgs_nail_pred + img_file_pred)
+        dice_mask_zeros = np.zeros(
+            (image_for_dice_mask_zeros.shape[0], image_for_dice_mask_zeros.shape[1]),
+            dtype=np.uint8,
+        )
+        dict_area_affected_mask_pred_combined.update({img_file_pred: dice_mask_zeros})
+
         print("File not found bc Fale Negative: ", txt_file_pred)
 
-# average proportion of nail affected by fungus in ground truth validation images
+# average proportion of nail affected by fungus in ground truth validation
+# images
 prop_affected_list_pred = list(dict_prop_affected_pred.values())
 
 # descriptive statistics of prop_affected_list_pred
@@ -428,14 +469,11 @@ print("Std: ", np.std(prop_affected_list_pred))
 print("Min: ", np.min(prop_affected_list_pred))
 print("Max: ", np.max(prop_affected_list_pred))
 
-import matplotlib.pyplot as plt
-
 # plot histogram of prop_affected_list_pred
 plt.hist(prop_affected_list_pred, bins=20)
 
-# %% Difference between ground truth and prediction per image
-import matplotlib.pyplot as plt
-from sklearn.metrics import mean_absolute_error
+# %% Difference between ground truth and predicted proportion of nail affected
+# per image
 
 fig = plt.figure(figsize=(18, 10))
 axes = fig.subplots(nrows=1, ncols=3)
@@ -459,5 +497,22 @@ axes[2].set_xticklabels([])
 axes[0].set_title("Difference GT and PRED prop affected per image")
 axes[1].set_title("Abs Difference GT and PRED prop affected per image")
 axes[2].set_title("Mean Absolute Error")
+
+# %% DICE coefficient between predicted area affected and ground truth area
+# affected
+
+area_affected_pred_vs_GT_dice = {}
+for image_name in dict_area_affected_gt_mask_combined:
+    dice_score = DICE_COE(
+        dict_area_affected_gt_mask_combined[image_name],
+        dict_area_affected_mask_pred_combined[image_name],
+    )
+    area_affected_pred_vs_GT_dice.update({image_name: dice_score})
+
+# average dice score
+mean_dice = np.mean(list(area_affected_pred_vs_GT_dice.values()))
+
+# histogram of mean_dice scores
+plt.hist(list(area_affected_pred_vs_GT_dice.values()), bins=20)
 
 # %%
