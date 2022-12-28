@@ -156,17 +156,6 @@ def crop_image_label(
         # get lowest distance
         min_dist = min([dist_right, dist_left, dist_top, dist_bottom])
 
-        # # if extra padding is greater extra pad will be set to the lowest distance
-        # if max_extra_pad > min_dist:
-        #     max_extra_pad = min_dist
-
-        # min_x, min_y, max_x, max_y = (
-        #     min_x - max_extra_pad,
-        #     min_y - max_extra_pad,
-        #     max_x + max_extra_pad,
-        #     max_y + max_extra_pad,
-        # )
-
         # if extra padding is greater extra pad will be set to the lowest distance
         if int(max_extra_pad_prop * smallest_dim) > min_dist:
             max_extra_pad_prop = min_dist / smallest_dim

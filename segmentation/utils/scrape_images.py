@@ -6,32 +6,23 @@ from fastai.vision.all import *
 
 
 def scrape_images(
-    dir_name="data/testset/imgs_scraped",
-    searches=[
-        ["Nagel gesund", "Nagel normal", "Fingernagel", "Fußnagel"],
-        ["Onychomykose Nagel", "Nagelmykose", "Nagelpilz"],
-        ["Dystrophie Nagel", "Nageldystrophie", "Onychodystrophie"],
-        [
-            "Melanonychie Nagel",
-            "Streifenförmige Nagelpigmentierung",
-            "Longitudinale Melanonychie",
-        ],
-        ["Onycholyse Nagel", "Nagelablösung", "Nagelabhebung"],
-    ],
-    max_n=50,
+    dir_name,
+    searches,
+    max_n=30,
 ):
     """
     Scrape images from Google and save them in folder(s) named after the search
     term(s) provided as input list(s). If multiple search terms are provided per
-    list, the first search term will be used as the representative name of the
-    class and the images will in subfolders of this class named after the
-    specific search terms.
+    list, the first search term will be used as the representative name and the
+    images for the other terms (synonyms) will be stored in subfolders of the
+    representative name.
 
     Args:
-        dir_name (str, optional): Path to save images to. Defaults to
-        "data/imgs_scraped". searches (list, optional): List all labels to search for
-        including synonyms. Defaults to ... max_n (int, optional): Maximum
-        number of images to download per label. Defaults to 50.
+        dir_name (str, optional): Path to save images to.
+        searches (list): List of lists containing search terms.
+        max_n (int, optional): Max number of images to scrape per search term.
+        Defaults to 30. Note, for melanonychie, 50 images are scraped bc the
+        initial number was too low.
     """
 
     # TODO: Maybe use cleaner code with pathlib: Path(dir.name).parents[2]
@@ -77,10 +68,7 @@ def rename_scraped_images(
         "data/imgs_scraped".
     """
 
-    home_dir = os.getcwd()
-
     # path where images are located
-    # path = home_dir + "/" + dir_name + "/"
     path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(__file__))), dir_name
     )
@@ -123,16 +111,12 @@ def copy_all_imgs_to_one_folder(
     old_folder="data/testset/imgs_scraped", new_folder="data/testset/imgs_scraped_clean"
 ):
     """Copy all images from old folder (including subfolders) to new folder, to
-    have all images in one folder.
+    have all images in one place.
 
     Args:
         old_folder (str, optional). Defaults to "data/imgs_scraped".
         new_folder (str, optional). Defaults to "data/imgs_scraped_clean".
     """
-
-    # home_dir = os.getcwd()
-    # path = home_dir + "/" + old_folder + "/"
-    # path_new = home_dir + "/" + new_folder + "/"
 
     path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(__file__))), old_folder
