@@ -2,12 +2,14 @@ import os
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-from sklearn.metrics import mean_absolute_error
 
 from utils.read_show_crop_imgs import (
     read_image_label,
     get_image_mask,
 )
+
+from sklearn.metrics import mean_absolute_error
+from utils.severity_seg import dice_coefficient
 
 #%% Area affected segmentation GROUND TRUTH: determine proportion of nail
 # affected by fungus in ground truth validation images (ground truth area
@@ -109,19 +111,6 @@ plt.hist(prop_affected_list, bins=20)
 # affected by fungus in predictions for validation images (predicted area
 # affected, predicted nail)
 
-
-def DICE_COE(mask1, mask2):
-    mask1[mask1 > 0] = 1  # bc mask was 255
-    mask2[mask2 > 0] = 1  # bc mask was 255
-    intersect = np.sum(mask1 * mask2)
-    fsum = np.sum(mask1)
-    ssum = np.sum(mask2)
-    dice = (2 * intersect) / (fsum + ssum)
-    dice = np.mean(dice)
-    dice = round(dice, 3)  # for easy reading
-    return dice
-
-
 base_path = os.path.dirname(os.path.dirname(__file__))
 
 path_val_imgs_nail_pred = os.path.join(
@@ -203,7 +192,7 @@ for txt_file_pred in files_val_txt_area_gt:  # files_val_txt_area_pred
 
         # calculate DICE coefficient for predicted area affected vs predicted
         # whole nail
-        dice_score = DICE_COE(nail_pred_mask, area_gt_mask_pred_combined)
+        dice_score = dice_coefficient(nail_pred_mask, area_gt_mask_pred_combined)
         dict_dice_score.update({img_file_pred: dice_score})
 
         # save image name and mask to later calculate dice score ground truth vs
@@ -272,7 +261,7 @@ axes[1].set_title("Mean Absolute Error")
 
 area_affected_pred_vs_GT_dice = {}
 for image_name in dict_area_affected_gt_mask_combined:
-    dice_score = DICE_COE(
+    dice_score = dice_coefficient(
         dict_area_affected_gt_mask_combined[image_name],
         dict_area_affected_mask_pred_combined[image_name],
     )

@@ -94,7 +94,7 @@ scrape_images(
             "onicólisis",  # spanish
         ],
     ],
-    max_n=30,
+    max_n=30,  # max number of images to scrape per search term
 )
 #%% rename images according to the subfolders they are in. removing broken
 # images that cannot be opened

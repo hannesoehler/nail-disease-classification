@@ -6,6 +6,20 @@ import matplotlib.pyplot as plt
 
 def read_image_label(path_to_img, path_to_txt, txt_row_obj=0, normilize=True):
 
+    """Read image and corresponding .txt file with coordinates of nail polygon
+
+    Args:
+        path_to_img: str, path to image
+        path_to_txt: str, path to .txt file
+        txt_row_obj: int, row number in .txt file with coordinates of nail polygon
+        normilize: bool, if True, normilize coordinates of nail polygon
+
+    Returns:
+        image: numpy array, image
+        polygon_nail: numpy array, coordinates of nail polygon
+        obj_class: str, nail class
+    """
+
     # read image
     image = cv2.imread(path_to_img)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -30,6 +44,17 @@ def read_image_label(path_to_img, path_to_txt, txt_row_obj=0, normilize=True):
 
 def get_image_mask(img, polygon_nail, display_mask=False):
 
+    """Create mask of nail on the image
+
+    Args:
+        img: numpy array, image
+        polygon_nail: numpy array, coordinates of nail polygon
+        display_mask: bool, if True, display image with mask
+
+    Returns:
+        mask: numpy array, mask of nail on the image
+    """
+
     # Create zero array for mask
     mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
 
@@ -37,7 +62,6 @@ def get_image_mask(img, polygon_nail, display_mask=False):
     cv2.fillPoly(mask, pts=[polygon_nail], color=(255, 255, 255))
 
     if display_mask:
-        # Plot image with mask
         fig = plt.figure(figsize=(22, 18))
         axes = fig.subplots(nrows=1, ncols=2)
         axes[0].imshow(img)
@@ -45,9 +69,7 @@ def get_image_mask(img, polygon_nail, display_mask=False):
         axes[0].set_title("Original image with mask")
         axes[1].set_title("Mask")
         plt.show()
-        # TL added this
         masked = cv2.bitwise_and(img, img, mask=mask)
-        # Plot image with mask
         fig = plt.figure(figsize=(22, 18))
         axes = fig.subplots(nrows=1, ncols=1)
         axes.imshow(masked)
@@ -59,10 +81,23 @@ def crop_image_label(
     image, polygon_nail, square=True, max_extra_pad_prop=0.2, obj_class=0
 ):
 
-    # set amount of padding around segmentation mask
-    # if greater than original image size it defaults to original image size
-    # square = True  # if True, adds image padding around the nail so that image is square (only if img around the nail is big enough)
-    # max_extra_pad = 40  # max amount of extra padding to add around the image
+    """Crop image around nail polygon with specified proportion of image area
+    (padding) shown around the nail
+
+    Args:
+        image: numpy array, image
+        polygon_nail: numpy array, coordinates of nail polygon
+        square: bool, if True, adds image padding around the nail so that image
+        is square (only if img around the nail is big enough)
+        max_extra_pad_prop: float, max proportion of extra image padding to add
+        around the nail
+        obj_class: str, object class in the image
+
+    Returns:
+        image: numpy array, cropped image
+        polygon_nail: numpy array, cropped coordinates of nail polygon
+        obj_class: str, nail class
+    """
 
     img_h, img_w = image.shape[:2]
 
@@ -144,7 +179,6 @@ def crop_image_label(
         )
 
     image_cropped = image[min_y:max_y, min_x:max_x, :]
-
     polygon_nail_cropped = polygon_nail - np.array([min_x, min_y])
 
     # convert poligon2 back to normilized coordinates - now off the new cropped image dims
@@ -154,7 +188,6 @@ def crop_image_label(
 
     # convert polygon_nail 3 to list of coordinates in original format
     polygon_nail_cropped_norm = polygon_nail_cropped_norm.reshape(-1).tolist()
-
     polygon_nail_cropped_norm = [obj_class] + polygon_nail_cropped_norm
 
     return image_cropped, polygon_nail_cropped, polygon_nail_cropped_norm
@@ -169,13 +202,15 @@ def save_image_label(
     txt_file,
 ):
 
+    """Save cropped image and nail polygon coordinates to file"""
+
     # save cropped image
     cv2.imwrite(
         os.path.join(imgs_cropped_path, img_file),
         cv2.cvtColor(image_cropped, cv2.COLOR_BGR2RGB),
     )
 
-    # save polygon_nail_cropped_norm to txt file with white space as delimiter
+    # save polygon_nail_cropped_norm to txt file
     with open(os.path.join(labels_cropped_path, txt_file), "w") as f:
         for item in polygon_nail_cropped_norm:
             f.write("%s " % item)
