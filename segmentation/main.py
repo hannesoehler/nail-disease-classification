@@ -475,28 +475,23 @@ plt.hist(prop_affected_list_pred, bins=20)
 # %% Difference between ground truth and predicted proportion of nail affected
 # per image
 
-fig = plt.figure(figsize=(18, 10))
-axes = fig.subplots(nrows=1, ncols=3)
+fig = plt.figure(figsize=(7, 5))
+axes = fig.subplots(nrows=1, ncols=2)
 
 axes[0].hist(np.array(prop_affected_list) - np.array(prop_affected_list_pred), bins=20)
-axes[1].hist(
-    np.abs((np.array(prop_affected_list) - np.array(prop_affected_list_pred))), bins=20
-)
 
 mean_absolute_error_ = mean_absolute_error(prop_affected_list, prop_affected_list_pred)
 
 # plot mean absolute error_ on histogram
-axes[2].bar(
+axes[1].bar(
     mean_absolute_error_,
     align="center",
     height=mean_absolute_error_,
 )
-axes[2].set_xticklabels([])
 
-# add title and axis names
-axes[0].set_title("Difference GT and PRED prop affected per image")
-axes[1].set_title("Abs Difference GT and PRED prop affected per image")
-axes[2].set_title("Mean Absolute Error")
+# add title in two lines
+axes[0].set_title("Difference GT and PRED \n proportion affected per image")
+axes[1].set_title("Mean Absolute Error")
 
 # %% DICE coefficient between predicted area affected and ground truth area
 # affected
@@ -512,7 +507,21 @@ for image_name in dict_area_affected_gt_mask_combined:
 # average dice score
 mean_dice = np.mean(list(area_affected_pred_vs_GT_dice.values()))
 
-# histogram of mean_dice scores
+# histogram of dice scores
 plt.hist(list(area_affected_pred_vs_GT_dice.values()), bins=20)
+
+# plot a histogram of dice scores and mean dice score
+fig = plt.figure(figsize=(7, 5))
+axes = fig.subplots(nrows=1, ncols=2)
+
+axes[0].hist(list(area_affected_pred_vs_GT_dice.values()), bins=20)
+axes[1].bar(
+    mean_dice,
+    align="center",
+    height=mean_dice,
+)
+
+axes[0].set_title("Dice coef GT and PRED area")
+axes[1].set_title("Mean Dice coef")
 
 # %%
