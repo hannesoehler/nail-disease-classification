@@ -26,10 +26,6 @@ from utils.read_show_crop_imgs import (
 
 #%% Scrape images from google
 
-# Search term(s) are provided as input list(s). If multiple search terms are
-# provided per list, the first search term will be used as the representative
-# name of the class and the others as synonyms for this class.
-
 scrape_images(
     dir_name="data/testset/imgs_scraped",
     searches=[
@@ -96,14 +92,14 @@ scrape_images(
     ],
     max_n=30,  # max number of images to scrape per search term
 )
-#%% rename images according to the subfolders they are in. removing broken
-# images that cannot be opened
+#%% Some preprocessing
+
+# rename images according to the subfolders they are in
 rename_scraped_images(dir_name="data/testset/imgs_scraped")
-#%%
+
 # copy all images from subfolders to a single folder imgs_scraped_clean
 copy_all_imgs_to_one_folder(new_folder="data/testset/imgs_scraped_clean")
 
-#%%
 # delete very small images
 delete_small_images(
     min_width=85, min_height=85, dir_name="data/testset/imgs_scraped_clean"
@@ -116,29 +112,30 @@ delete_extreme_aspect_ratio_images(
     dir_name="data/testset/imgs_scraped_clean",
 )
 
-#%% delete duplicates using embeddings and cosine similarity
-
+# delete duplicates using embeddings and cosine similarity
 # TODO: this is quite slow, maybe use a faster method
 delete_duplicate_images(dir_name="data/testset/imgs_scraped_clean")
 
-#%% Yolov5 instance segmentation prediction
+#%% Yolov5 instance segmentation for nail cropping
 
 # clone yolov5 repo
 base_path = os.path.dirname(os.path.dirname(__file__))
 clone_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models/yolov5")
 Repo.clone_from("https://github.com/ultralytics/yolov5.git", clone_path)
 
-# directories and params for yolo prediction
+# directories and params for yolo segmentation
 path = os.getcwd()
 os.chdir(clone_path + "/segment")
-weights_fdr = base_path + "/models/yolov5_best_model/best.pt"
 source_fdr = base_path + "/data/testset/imgs_scraped_clean"
 project_fdr = base_path + "/data/testset/imgs_original"
-conf_fdr = "0.4"  # can be adjusted to desired confidence level
 if os.path.exists(base_path + "/data/testset/imgs_original"):
     shutil.rmtree(base_path + "/data/testset/imgs_original")
+weights_fdr = (
+    base_path + "/models/yolov5_best_model/best.pt"
+)  # path to best nail segmentation model
+conf_fdr = "0.4"
 
-# run yolov5 prediction
+# run yolov5 prediction on scraped images
 subprocess.run(
     [
         "python3",
@@ -159,13 +156,12 @@ subprocess.run(
 )
 os.chdir(path)
 
-#%% Crop images and update segmentation mask
+#%% Crop images based on yolov5 prediction, and update segmentation mask coordinates
 
 path_imgs_original = os.path.join(base_path, "data/testset/imgs_scraped_clean/")
 path_txt_original = os.path.join(base_path, "data/testset/imgs_original", "labels/")
 path_imgs_cropped = os.path.join(base_path, "data/testset/imgs_cropped/")
 path_txt_cropped = os.path.join(base_path, "data/testset/txt_cropped/")
-
 txt_original = os.listdir(path_txt_original)
 
 # go through each original txt file containing segmentation mask coordinates
@@ -176,12 +172,11 @@ for txt_file in txt_original:
     # image file name is the same as txt file name
     img_file = txt_file.split(".")[0] + ".jpg"
 
-    # number of lines is the number of objects (nails) in the image
+    # get number of objects (nails) in the image
     with open(path_txt_original + txt_file, "r") as f:
         nobj_in_image = len(f.readlines())
 
-    # some images have more than one object (nail) - save one cropped image and
-    # txt file per nail
+    # save one cropped image and txt file per object (nail) in image
     for cur_obj in range(nobj_in_image):
 
         image, polygon_nail, obj_class = read_image_label(
@@ -214,8 +209,6 @@ for txt_file in txt_original:
         )
 
 #%% Delete very small crop images and corresponding txt files
-
-# TODO: set min_width and min_height to desired values
 
 del_imagenames = delete_small_images(
     min_width=80,
