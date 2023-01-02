@@ -1,5 +1,3 @@
-#%% Image embedding
-
 import os
 import torch
 import torchvision.models as models
@@ -8,6 +6,8 @@ from numpy import dot
 from numpy.linalg import norm
 from PIL import Image
 from collections import defaultdict
+
+#%% Delete duplicates using image embedding and cosine similarity
 
 
 class Img2Vec:  # https://github.com/christiansafka/img2vec
@@ -145,17 +145,12 @@ def cosine_similarity(a, b):
     return dot(a, b) / (norm(a) * norm(b))
 
 
-def delete_duplicate_images(dir_name="data/testset/imgs_scraped_clean"):
+def delete_duplicate_images(path):
 
     """Delete duplicate images from a directory"""
 
     # Initialize image 2 vector model without GPU
     img2vec = Img2Vec(cuda=False)
-
-    # path where images are located
-    path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), dir_name
-    )
 
     # n images in directory
     n_total = len(os.listdir(path))
@@ -216,18 +211,18 @@ def delete_duplicate_images(dir_name="data/testset/imgs_scraped_clean"):
     print(n_deleted, " out of ", n_total, " images deleted")
 
 
+#%% Delete some more images/files
+
+
 def delete_small_images(
+    path,
     min_width=85,
     min_height=85,
-    dir_name="data/testset/imgs_scraped_clean",
     return_del_filenames=False,
 ):
 
     """Delete small images from a directory"""
 
-    path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), dir_name
-    )
     n_total = len(os.listdir(path))
     n_deleted = 0
     file_name_deleted = []
@@ -249,16 +244,12 @@ def delete_small_images(
 
 
 def delete_extreme_aspect_ratio_images(
+    path,
     max_aspect_ratio=2.0,
     min_aspect_ratio=0.5,
-    dir_name="data/testset/imgs_scraped_clean",
 ):
-
     """Delete images with extreme aspect ratio from a directory"""
 
-    path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), dir_name
-    )
     n_total = len(os.listdir(path))
     n_deleted = 0
     for file in os.listdir(path):

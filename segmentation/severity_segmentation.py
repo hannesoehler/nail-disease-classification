@@ -4,12 +4,10 @@ import os
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-
 from utils.read_show_crop_imgs import (
     read_image_label,
     get_image_mask,
 )
-
 from sklearn.metrics import mean_absolute_error
 from utils.severity_seg import dice_coefficient
 

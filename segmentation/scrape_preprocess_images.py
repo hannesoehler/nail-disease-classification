@@ -11,10 +11,10 @@ from utils.scrape_images import (
     copy_all_imgs_to_one_folder,
 )
 
-from utils.delete_duplicates import (
+from utils.delete_images import (
     delete_small_images,
-    delete_duplicate_images,
     delete_extreme_aspect_ratio_images,
+    delete_duplicate_images,
     delete_txt_files_for_del_images,
 )
 
@@ -26,8 +26,12 @@ from utils.read_show_crop_imgs import (
 
 #%% Scrape images from google
 
+path = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "data/testset/imgs_scraped"
+)
+
 scrape_images(
-    dir_name="data/testset/imgs_scraped",
+    path=path,
     searches=[
         [
             "Nagel gesund",  # german
@@ -95,26 +99,28 @@ scrape_images(
 #%% Some preprocessing
 
 # rename images according to the subfolders they are in
-rename_scraped_images(dir_name="data/testset/imgs_scraped")
+rename_scraped_images(path=path)
 
 # copy all images from subfolders to a single folder imgs_scraped_clean
-copy_all_imgs_to_one_folder(new_folder="data/testset/imgs_scraped_clean")
+copy_all_imgs_to_one_folder(path_old=path, path_new=path + "_clean")
 
 # delete very small images
 delete_small_images(
-    min_width=85, min_height=85, dir_name="data/testset/imgs_scraped_clean"
+    path=path + "_clean",
+    min_width=85,
+    min_height=85,
 )
 
 # delete images with extreme aspect ratio
 delete_extreme_aspect_ratio_images(
+    path=path + "_clean",
     max_aspect_ratio=2.4,
     min_aspect_ratio=0.417,
-    dir_name="data/testset/imgs_scraped_clean",
 )
 
 # delete duplicates using embeddings and cosine similarity
 # TODO: this is quite slow, maybe use a faster method
-delete_duplicate_images(dir_name="data/testset/imgs_scraped_clean")
+delete_duplicate_images(path=path + "_clean")
 
 #%% Yolov5 instance segmentation for nail cropping
 
