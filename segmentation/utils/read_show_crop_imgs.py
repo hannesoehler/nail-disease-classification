@@ -160,7 +160,7 @@ def crop_image_label(
         if int(max_extra_pad_prop * smallest_dim) > min_dist:
             max_extra_pad_prop = min_dist / smallest_dim
 
-        min_x, min_y, max_x, max_y = (  # TL added this
+        min_x, min_y, max_x, max_y = (
             min_x - int(max_extra_pad_prop * smallest_dim),
             min_y - int(max_extra_pad_prop * smallest_dim),
             max_x + int(max_extra_pad_prop * smallest_dim),
@@ -170,12 +170,12 @@ def crop_image_label(
     image_cropped = image[min_y:max_y, min_x:max_x, :]
     polygon_nail_cropped = polygon_nail - np.array([min_x, min_y])
 
-    # convert poligon2 back to normilized coordinates - now off the new cropped image dims
+    # convert poligon back to normilized coordinates (now of the new cropped image dims)
     polygon_nail_cropped_norm = polygon_nail_cropped / np.array(
         [image_cropped.shape[1], image_cropped.shape[0]]
     )
 
-    # convert polygon_nail 3 to list of coordinates in original format
+    # convert polygon to list of coordinates in original format
     polygon_nail_cropped_norm = polygon_nail_cropped_norm.reshape(-1).tolist()
     polygon_nail_cropped_norm = [obj_class] + polygon_nail_cropped_norm
 
@@ -199,7 +199,7 @@ def save_image_label(
         cv2.cvtColor(image_cropped, cv2.COLOR_BGR2RGB),
     )
 
-    # save polygon_nail_cropped_norm to txt file
+    # save coordinates to txt file
     with open(os.path.join(labels_cropped_path, txt_file), "w") as f:
         for item in polygon_nail_cropped_norm:
             f.write("%s " % item)

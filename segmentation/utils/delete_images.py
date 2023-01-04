@@ -7,8 +7,6 @@ from numpy.linalg import norm
 from PIL import Image
 from collections import defaultdict
 
-#%% Delete duplicates using image embedding and cosine similarity
-
 
 class Img2Vec:  # https://github.com/christiansafka/img2vec
     RESNET_OUTPUT_SIZES = {
@@ -140,16 +138,29 @@ class Img2Vec:  # https://github.com/christiansafka/img2vec
 
 def cosine_similarity(a, b):
 
-    """Cosine similarity between vectors a and b"""
+    """Cosine similarity between vectors a and b
+
+    Args:
+        a: vector a
+        b: vector b
+
+    Returns:
+        cosine similarity between a and b
+    """
 
     return dot(a, b) / (norm(a) * norm(b))
 
 
-def delete_duplicate_images(path):
+def delete_duplicate_images(path, similarity_thesh):
 
-    """Delete duplicate images from a directory"""
+    """Delete duplicate images from a directory using cosine similarity
 
-    # Initialize image 2 vector model without GPU
+    Args:
+        path: path to directory containing images
+        similarity_thesh: threshold for cosine similarity between images
+    """
+
+    # Initialize Img2Vec without GPU
     img2vec = Img2Vec(cuda=False)
 
     # n images in directory
@@ -176,30 +187,33 @@ def delete_duplicate_images(path):
                     vector, vector_2
                 )
 
-    # Get all the pairs with a cosine similarity > 0.99999 and delete the duplicates
+    # Get all the pairs with a cosine similarity greater than specified
+    # threshold and delete the duplicates
     duplicates = []
     for image_name, vector in pairwise_similarities.items():
         for image_name_2, similarity in vector.items():
-            if similarity > 0.99999:
-                # print([image_name, image_name_2, similarity)
+            if similarity > similarity_thesh:
                 duplicates.append(
                     [image_name, image_name_2]
                 )  # list of duplicate pair, append to duplicates list
 
-    # sort the list of duplicate pairs per pair, this is done to keep one exemplar of each image
+    # sort the list of duplicate pairs per pair (to keep one exemplar of each
+    # image)
     duplicates_sorted = [sorted(x) for x in duplicates]
 
     duplicates_final_A = [x[0] for x in duplicates_sorted]
     duplicates_final_B = [x[1] for x in duplicates_sorted]
 
-    # delete only the second element of each list (using duplicates_final_B) to keep one exemplar of each image
+    # delete only the second element of each list (using duplicates_final_B) to
+    # keep one exemplar of each image
     n_deleted = 0
     for index, file in enumerate(duplicates_final_B):
 
         # print all ducplicate pairs
         print("Duplicates: ", file, " ", duplicates_final_A[index])
 
-        # delete one element; some files are not deleted, this is because they are already deleted in a previous iteration
+        # delete one element; some files are not deleted, this is because they
+        # are already deleted in a previous iteration
         try:
             os.remove(path + "/" + file)
             print("---> deleting file: ", file)
@@ -211,9 +225,6 @@ def delete_duplicate_images(path):
     print(n_deleted, " out of ", n_total, " images deleted")
 
 
-#%% Delete some more images/files
-
-
 def delete_small_images(
     path,
     min_width=85,
@@ -221,7 +232,17 @@ def delete_small_images(
     return_del_filenames=False,
 ):
 
-    """Delete small images from a directory"""
+    """Delete small images from a directory
+
+    Args:
+        path: path to directory containing images
+        min_width: minimum width of image
+        min_height: minimum height of image
+        return_del_filenames: if True, return list of deleted filenames
+
+    Returns:
+        list of deleted filenames
+    """
 
     n_total = len(os.listdir(path))
     n_deleted = 0
@@ -248,7 +269,13 @@ def delete_extreme_aspect_ratio_images(
     max_aspect_ratio=2.0,
     min_aspect_ratio=0.5,
 ):
-    """Delete images with extreme aspect ratio from a directory"""
+    """Delete images with extreme aspect ratio from a directory
+
+    Args:
+        path: path to directory containing images
+        max_aspect_ratio: maximum aspect ratio of image
+        min_aspect_ratio: minimum aspect ratio of image
+    """
 
     n_total = len(os.listdir(path))
     n_deleted = 0
@@ -273,7 +300,16 @@ def delete_txt_files_for_del_images(
     return_del_filenames=False,
 ):
 
-    """Delete txt files for images that have been deleted"""
+    """Delete txt files for images that have been deleted
+
+    Args:
+        file_names_to_delete: list of file names to delete
+        path: path to directory containing images
+        return_del_filenames: if True, return list of deleted filenames
+
+    Returns:
+        list of deleted filenames
+    """
 
     n_deleted = 0
     file_name_deleted = []

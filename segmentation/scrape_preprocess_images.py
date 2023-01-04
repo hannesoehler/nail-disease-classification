@@ -124,7 +124,7 @@ delete_extreme_aspect_ratio_images(
 
 # delete duplicates using embeddings and cosine similarity
 # TODO: this is quite slow, maybe use a faster method
-delete_duplicate_images(path=path_imgs_scraped_clean)
+delete_duplicate_images(path=path_imgs_scraped_clean, similarity_thesh=0.99999)
 
 #%% Yolov5 instance segmentation for nail cropping
 
@@ -219,7 +219,7 @@ for txt_file in labels_originalSize:
             txt_file_save,
         )
 
-#%% Delete very small crop images and corresponding txt files
+#%% Delete very small crop images and corresponding label (txt) files
 
 del_imagenames = delete_small_images(
     path=path_imgs_cropped,
