@@ -1,4 +1,4 @@
-#%% Imports
+#%% Setup
 
 import os
 import shutil
@@ -24,14 +24,14 @@ from utils.read_show_crop_imgs import (
     save_image_label,
 )
 
+path_base = os.path.dirname(os.path.dirname(__file__))
+
 #%% Scrape images from google
 
-path = os.path.join(
-    os.path.dirname(os.path.dirname(__file__)), "data/testset/imgs_scraped"
-)
+path_imgs_scraped = path_base + "/data/testset/imgs_scraped"
 
 scrape_images(
-    path=path,
+    path=path_imgs_scraped,
     searches=[
         [
             "Nagel gesund",  # german
@@ -99,98 +99,102 @@ scrape_images(
 #%% Some preprocessing
 
 # rename images according to the subfolders they are in
-rename_scraped_images(path=path)
+rename_scraped_images(path=path_imgs_scraped)
 
 # copy all images from subfolders to a single folder imgs_scraped_clean
-copy_all_imgs_to_one_folder(path_old=path, path_new=path + "_clean")
+path_imgs_scraped_clean = path_base + "/data/testset/imgs_scraped_clean"
+copy_all_imgs_to_one_folder(
+    path_old=path_imgs_scraped,
+    path_new=path_imgs_scraped_clean,
+)
 
 # delete very small images
 delete_small_images(
-    path=path + "_clean",
+    path=path_imgs_scraped_clean,
     min_width=85,
     min_height=85,
 )
 
 # delete images with extreme aspect ratio
 delete_extreme_aspect_ratio_images(
-    path=path + "_clean",
+    path=path_imgs_scraped_clean,
     max_aspect_ratio=2.4,
     min_aspect_ratio=0.417,
 )
 
 # delete duplicates using embeddings and cosine similarity
 # TODO: this is quite slow, maybe use a faster method
-delete_duplicate_images(path=path + "_clean")
+delete_duplicate_images(path=path_imgs_scraped_clean)
 
 #%% Yolov5 instance segmentation for nail cropping
 
-# clone yolov5 repo
-base_path = os.path.dirname(os.path.dirname(__file__))
-clone_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models/yolov5")
-Repo.clone_from("https://github.com/ultralytics/yolov5.git", clone_path)
+path_clone = os.path.join(path_base, "models/yolov5")
+path_yoloScript = path_clone + "/segment/predict.py"
+path_model = path_base + "/models/yolov5_best_model/best.pt"
 
-# directories and params for yolo segmentation
-path = os.getcwd()
-os.chdir(clone_path + "/segment")
-source_fdr = base_path + "/data/testset/imgs_scraped_clean"
-project_fdr = base_path + "/data/testset/imgs_original"
-if os.path.exists(base_path + "/data/testset/imgs_original"):
-    shutil.rmtree(base_path + "/data/testset/imgs_original")
-weights_fdr = (
-    base_path + "/models/yolov5_best_model/best.pt"
-)  # path to best nail segmentation model
-conf_fdr = "0.4"
+# clone yolov5 repo
+# Repo.clone_from("https://github.com/ultralytics/yolov5.git", path_clone)
+
+path_imgs_scraped_clean_pred = path_base + "/data/testset/imgs_scraped_clean_pred"
+if os.path.exists(path_imgs_scraped_clean_pred):
+    shutil.rmtree(path_imgs_scraped_clean_pred)
 
 # run yolov5 prediction on scraped images
 subprocess.run(
     [
         "python3",
-        "predict.py",
+        path_yoloScript,
         "--weights",
-        weights_fdr,
+        path_model,
         "--source",
-        source_fdr,
+        path_imgs_scraped_clean,
         "--save-txt",
         "--name",
-        project_fdr,
+        path_imgs_scraped_clean_pred,
         "--project",
-        project_fdr,
+        path_imgs_scraped_clean_pred,
         "--conf",
-        conf_fdr,
+        "0.4",
         "--save-txt",
     ]
 )
-os.chdir(path)
 
-#%% Crop images based on yolov5 prediction, and update segmentation mask coordinates
+#%% Crop images based on yolov5 prediction, and get new segmentation mask coordinates
 
-path_imgs_original = os.path.join(base_path, "data/testset/imgs_scraped_clean/")
-path_txt_original = os.path.join(base_path, "data/testset/imgs_original", "labels/")
-path_imgs_cropped = os.path.join(base_path, "data/testset/imgs_cropped/")
-path_txt_cropped = os.path.join(base_path, "data/testset/txt_cropped/")
-txt_original = os.listdir(path_txt_original)
+path_imgs_originalSize = os.path.join(path_base, "data/testset/imgs_scraped_clean/")
+path_labels_originalSize = os.path.join(
+    path_base, "data/testset/imgs_scraped_clean_pred/labels/"
+)
+path_imgs_cropped = os.path.join(
+    path_base, "data/testset/imgs_scraped_clean_pred_cropped/"
+)
+path_labels_cropped = os.path.join(
+    path_base, "data/testset/imgs_scraped_clean_pred_cropped/labels"
+)
+labels_originalSize = os.listdir(path_labels_originalSize)
 
-# go through each original txt file containing segmentation mask coordinates
-# (nail), load the corresponding image file, crop the image based on the mask,
-# update txt coordinates wrt new image, and save everything.
-for txt_file in txt_original:
+# go through each original label (txt) file containing predicted segmentation
+# mask coordinates, load the corresponding image file, crop the image based on
+# the mask, get new mask coordinates, and save image and new coordinates.
+for txt_file in labels_originalSize:
 
     # image file name is the same as txt file name
     img_file = txt_file.split(".")[0] + ".jpg"
 
     # get number of objects (nails) in the image
-    with open(path_txt_original + txt_file, "r") as f:
+    with open(path_labels_originalSize + txt_file, "r") as f:
         nobj_in_image = len(f.readlines())
 
-    # save one cropped image and txt file per object (nail) in image
+    # go through each object (nail) in the image
     for cur_obj in range(nobj_in_image):
 
         image, polygon_nail, obj_class = read_image_label(
-            path_imgs_original + img_file, path_txt_original + txt_file, cur_obj
+            path_imgs_originalSize + img_file,
+            path_labels_originalSize + txt_file,
+            cur_obj,
         )
 
-        # crop image and update segmentation mask based on cropped image. Set
-        # desired extra padding in pixels
+        # crop image and get new coordinates
         (
             image_cropped,
             polygon_nail_cropped,
@@ -199,17 +203,18 @@ for txt_file in txt_original:
             image, polygon_nail, square=False, max_extra_pad_prop=0.2, obj_class=0
         )
 
-        # new file names for saved cropped image and txt file with updated
-        # segmentation mask cur_obj is added to the file name to distinguish
-        # between multiple objects in the same image
+        # new file names for cropped image and txt file with coordinates:
+        # cur_obj at end of file name to distinguish between multiple nails in
+        # the same image
         img_file_save = img_file.split(".")[0] + "_" + str(cur_obj) + ".jpg"
         txt_file_save = img_file.split(".")[0] + "_" + str(cur_obj) + ".txt"
 
+        # save cropped image and new txt (label) file with coordinates
         save_image_label(
             image_cropped,
             polygon_nail_cropped_norm,
             path_imgs_cropped,
-            path_txt_cropped,
+            path_labels_cropped,
             img_file_save,
             txt_file_save,
         )
@@ -217,14 +222,13 @@ for txt_file in txt_original:
 #%% Delete very small crop images and corresponding txt files
 
 del_imagenames = delete_small_images(
+    path=path_imgs_cropped,
     min_width=80,
     min_height=80,
-    dir_name="data/testset/imgs_cropped",
     return_del_filenames=True,
 )
 
 delete_txt_files_for_del_images(
     file_names_to_delete=del_imagenames,
-    dir_name="data/testset/txt_cropped",
-    return_del_filenames=False,
+    path=path_labels_cropped,
 )

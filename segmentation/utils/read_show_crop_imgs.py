@@ -33,7 +33,7 @@ def read_image_label(path_to_img, path_to_txt, txt_row_obj=0, normilize=True):
             [[eval(x), eval(y)] for x, y in zip(coords[0::2], coords[1::2])]
         )  # convert list of coordinates to numpy massive
 
-    # Convert normilized coordinates of polygon_nail to coordinates of image
+    # Convert normilized coordinates of polygon_nail to pixel coordinates
     if normilize:
         img_h, img_w = image.shape[:2]
         polygon_nail[:, 0] = polygon_nail[:, 0] * img_w

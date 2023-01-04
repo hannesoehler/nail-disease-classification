@@ -268,16 +268,13 @@ def delete_extreme_aspect_ratio_images(
 
 
 def delete_txt_files_for_del_images(
-    file_names_to_delete=[],
-    dir_name="data/testset/txt_cropped",
+    file_names_to_delete,
+    path,
     return_del_filenames=False,
 ):
 
     """Delete txt files for images that have been deleted"""
 
-    path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), dir_name
-    )
     n_deleted = 0
     file_name_deleted = []
     for file in file_names_to_delete:
