@@ -34,7 +34,7 @@ scrape_images(
     path=path_imgs_scraped,
     searches=[
         [
-            "Nagel gesund",  # german
+            "Nagel gesund",  # germa n
             "Fingernagel",  # german
             "Fußnagel",  # german
             "ongle sain",  # french
@@ -188,6 +188,7 @@ for txt_file in labels_originalSize:
     # go through each object (nail) in the image
     for cur_obj in range(nobj_in_image):
 
+        # read image and get mask coordinates (polygon_nail)
         image, polygon_nail, obj_class = read_image_label(
             path_imgs_originalSize + img_file,
             path_labels_originalSize + txt_file,

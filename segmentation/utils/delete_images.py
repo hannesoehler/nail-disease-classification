@@ -241,7 +241,7 @@ def delete_small_images(
         return_del_filenames: if True, return list of deleted filenames
 
     Returns:
-        list of deleted filenames
+        file_name_deleted: list of deleted filenames
     """
 
     n_total = len(os.listdir(path))
@@ -308,7 +308,7 @@ def delete_txt_files_for_del_images(
         return_del_filenames: if True, return list of deleted filenames
 
     Returns:
-        list of deleted filenames
+        file_name_deleted: list of deleted filenames
     """
 
     n_deleted = 0

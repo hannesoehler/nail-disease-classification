@@ -15,19 +15,19 @@ from utils.severity_seg import dice_coefficient
 # affected by fungus in ground truth validation images (ground truth area
 # affected, ground truth nail)
 
-base_path = os.path.dirname(os.path.dirname(__file__))
+path_base = os.path.dirname(os.path.dirname(__file__))
 
 path_val_imgs_nail_gt = os.path.join(
-    base_path, "data/valset/segmentation/ground_truth/nail/images/"
+    path_base, "data/valset/segmentation/ground_truth/nail/images/"
 )
 path_val_txt_nail_gt = os.path.join(
-    base_path, "data/valset/segmentation/ground_truth/nail/labels/"
+    path_base, "data/valset/segmentation/ground_truth/nail/labels/"
 )
 path_val_imgs_area_gt = os.path.join(
-    base_path, "data/valset/segmentation/ground_truth/area_affected/images/"
+    path_base, "data/valset/segmentation/ground_truth/area_affected/images/"
 )
 path_val_txt_area_gt = os.path.join(
-    base_path, "data/valset/segmentation/ground_truth/area_affected/labels/"
+    path_base, "data/valset/segmentation/ground_truth/area_affected/labels/"
 )
 
 files_val_txt_nail_gt = os.listdir(path_val_txt_nail_gt)
@@ -50,7 +50,7 @@ for txt_file in files_val_txt_area_gt:
     with open(path_val_txt_area_gt + txt_file, "r") as f:
         nareas_affected = len(f.readlines())
 
-    # assuming there is only one nail per image
+    # assuming there is only one nail per image (txt_row_obj=0)
     imag_nail_gt, polygon_nail_gt, obj_class = read_image_label(
         path_val_imgs_nail_gt + img_file, path_val_txt_nail_gt + txt_file, txt_row_obj=0
     )
@@ -70,11 +70,9 @@ for txt_file in files_val_txt_area_gt:
     area_gt_mask_combined = np.sum(area_gt_mask, axis=0)
 
     # ground truth propotion of whole nail affected
-    proportion_affected = len(  # corrected bug, this should be len not np.sum
-        area_gt_mask_combined[area_gt_mask_combined > 0]
-    ) / len(
+    proportion_affected = len(area_gt_mask_combined[area_gt_mask_combined > 0]) / len(
         nail_gt_mask[nail_gt_mask > 0]
-    )  # corrected bug, this should be len not np.sum
+    )
 
     # if ground truth proportion affected is greater than 1 (bigger than the
     # ground truth nail itself), then it is set to 1. This was not observed.
@@ -94,27 +92,23 @@ print("Median: ", np.median(prop_affected_list))
 print("Std: ", np.std(prop_affected_list))
 print("Min: ", np.min(prop_affected_list))
 print("Max: ", np.max(prop_affected_list))
-
 plt.hist(prop_affected_list, bins=20)
 
 #%% PREDICTED area affected segmentation: determine proportion of nail
 # affected by fungus in predictions for validation images (predicted area
 # affected, predicted nail)
 
-base_path = os.path.dirname(os.path.dirname(__file__))
-
 path_val_imgs_nail_pred = os.path.join(
-    base_path, "data/valset/segmentation/prediction/nail/images/"
+    path_base, "data/valset/segmentation/prediction/nail/images/"
 )
-
 path_val_txt_nail_pred = os.path.join(
-    base_path, "data/valset/segmentation/prediction/nail/labels/"
+    path_base, "data/valset/segmentation/prediction/nail/labels/"
 )
 path_val_imgs_area_pred = os.path.join(
-    base_path, "data/valset/segmentation/prediction/area_affected/images/"
+    path_base, "data/valset/segmentation/prediction/area_affected/images/"
 )
 path_val_txt_area_pred = os.path.join(
-    base_path, "data/valset/segmentation/prediction/area_affected/labels/"
+    path_base, "data/valset/segmentation/prediction/area_affected/labels/"
 )
 
 files_val_txt_nail_pred = os.listdir(path_val_txt_nail_pred)
@@ -128,7 +122,7 @@ dict_area_affected_mask_pred_combined = (
     {}
 )  # to later calculate dice score ground truth vs predicted area affected
 
-# looping over ground truth txt files bc for prediction some txt files are
+# looping over ground truth txt files bc some prediction txt files are
 # missing due to False Negatives
 for txt_file_pred in files_val_txt_area_gt:  # files_val_txt_area_pred
 
@@ -166,11 +160,9 @@ for txt_file_pred in files_val_txt_area_gt:  # files_val_txt_area_pred
         area_gt_mask_pred_combined = np.sum(area_gt_mask_pred, axis=0)
 
         # predicted propotion of whole nail affected
-        proportion_affected = len(  # corrected bug, this should be len not np.sum
+        proportion_affected = len(
             area_gt_mask_pred_combined[area_gt_mask_pred_combined > 0]
-        ) / len(
-            nail_pred_mask[nail_pred_mask > 0]
-        )  # corrected bug, this should be len not np.sum
+        ) / len(nail_pred_mask[nail_pred_mask > 0])
 
         # if predicted proportion affected is greater than 1 (bigger than the
         # predicted nail itself), then it is set to 1
@@ -210,17 +202,14 @@ print("Median: ", np.median(prop_affected_list_pred))
 print("Std: ", np.std(prop_affected_list_pred))
 print("Min: ", np.min(prop_affected_list_pred))
 print("Max: ", np.max(prop_affected_list_pred))
-
 plt.hist(prop_affected_list_pred, bins=20)
 
-# %% Difference between ground truth and predicted proportion of nail affected
-# per image, and mean absolute error
+#%% Difference between ground truth and predicted proportion of nail affected
+# per image (and mean absolute error)
 
 fig = plt.figure(figsize=(7, 5))
 axes = fig.subplots(nrows=1, ncols=2)
-
 axes[0].hist(np.array(prop_affected_list) - np.array(prop_affected_list_pred), bins=20)
-
 mean_absolute_error_ = mean_absolute_error(prop_affected_list, prop_affected_list_pred)
 axes[1].bar(
     mean_absolute_error_,
@@ -230,7 +219,7 @@ axes[1].bar(
 axes[0].set_title("Difference GT and PRED \n proportion affected per image")
 axes[1].set_title("Mean Absolute Error")
 
-# %% DICE coefficient between ground truth and predicted area affected
+#%% DICE coefficient between ground truth and predicted area affected
 
 area_affected_pred_vs_GT_dice = {}
 for image_name in dict_area_affected_gt_mask_combined:
@@ -239,8 +228,6 @@ for image_name in dict_area_affected_gt_mask_combined:
         dict_area_affected_mask_pred_combined[image_name],
     )
     area_affected_pred_vs_GT_dice.update({image_name: dice_score})
-
-# average dice score
 mean_dice = np.mean(list(area_affected_pred_vs_GT_dice.values()))
 
 # plot a histogram of dice scores and mean dice score
@@ -255,7 +242,8 @@ axes[1].bar(
 axes[0].set_title("Dice coef GT and PRED area")
 axes[1].set_title("Mean Dice coef")
 
-#%% Displaying masks: ground truth area affected and predicted area affected
+#%% Displaying all ground truth and predicted area affected masks for visual
+# comparison
 
 for i in range(len(dict_area_affected_gt_mask_combined)):
     image_name = list(dict_area_affected_gt_mask_combined.keys())[i]

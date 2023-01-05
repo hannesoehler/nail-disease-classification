@@ -21,27 +21,24 @@ def scrape_images(
         path (str, optional): Path to save images to.
         searches (list): List of lists containing search terms.
         max_n (int, optional): Max number of images to scrape per search term.
-        Defaults to 30. Note, for melanonychie, 50 images are scraped bc the
-        initial number was too low.
+        Defaults to 30.
     """
 
     path = Path(path)
     for i, d_class in enumerate(searches):
-        # first element of d_class is going to be the representative name of the
-        # class
+        # first element of d_class is representative name of the disease class
         d_class_dir_name = d_class[0]
         d_dest = path / d_class_dir_name
         d_dest.mkdir(exist_ok=True, parents=True)
         for synonym in d_class:
             s_dest = path / d_class_dir_name / synonym
             s_dest.mkdir(exist_ok=True, parents=True)
-            if i == 3:  # more images for class melanonychie
-                urls = L(ddg_images(f"{synonym}", max_results=50)).itemgot("image")
-            else:
-                urls = L(ddg_images(f"{synonym}", max_results=max_n)).itemgot("image")
+            # if i == 3:  # for melanonychie, more images (50) were scraped
+            #     urls = L(ddg_images(f"{synonym}", max_results=50)).itemgot("image")
+            # else:
+            #    urls = L(ddg_images(f"{synonym}", max_results=max_n)).itemgot("image")
+            urls = L(ddg_images(f"{synonym}", max_results=max_n)).itemgot("image")
             download_images(s_dest, urls=urls)
-
-    # Removing images that might not have been downloaded properly
     failed = verify_images(get_image_files(path))
     failed.map(Path.unlink)
     len(failed)
@@ -58,7 +55,6 @@ def rename_scraped_images(path):
         and subdirectories with synonyms and images therein.
     """
 
-    # get directories in path without hidden directories
     d_class_dir_name = [d for d in os.listdir(path) if not d.startswith(".")]
 
     for d_dir_name in d_class_dir_name:
@@ -96,8 +92,8 @@ def copy_all_imgs_to_one_folder(
     path_old,
     path_new,
 ):
-    """Copy all images from old folder (including subfolders) to new folder to
-    have all images in one place without subfolders.
+    """Copy all images from old folder (including subfolders) to new folder in
+    order to have all images in one place without subfolders.
 
     Args:
         old_folder (str). Path to folder with subfolders.

@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 
 def read_image_label(path_to_img, path_to_txt, txt_row_obj=0, normilize=True):
 
-    """Read image and corresponding .txt file with coordinates of nail polygon
+    """Read image and corresponding label (.txt) file with coordinates of nail
+    polygon
 
     Args:
         path_to_img: str, path to image
@@ -44,7 +45,7 @@ def read_image_label(path_to_img, path_to_txt, txt_row_obj=0, normilize=True):
 
 def get_image_mask(img, polygon_nail, display_mask=False):
 
-    """Create mask of nail on the image
+    """Create mask on the image, showing the segmented nail
 
     Args:
         img: numpy array, image
