@@ -24,10 +24,10 @@ from utils.read_show_crop_imgs import (
     save_image_label,
 )
 
-if __name__ == "__main__":
+path_base = os.path.dirname(os.path.dirname(__file__))
+path_imgs_scraped = path_base + "/data/testset/imgs_scraped"
 
-    path_base = os.path.dirname(os.path.dirname(__file__))
-    path_imgs_scraped = path_base + "/data/testset/imgs_scraped"
+if __name__ == "__main__":
 
     #%% Scrape images from google
 
@@ -133,7 +133,8 @@ if __name__ == "__main__":
     path_model = path_base + "/models/yolov5_best_model/best.pt"
 
     # clone yolov5 repo
-    # Repo.clone_from("https://github.com/ultralytics/yolov5.git", path_clone)
+    if not os.path.exists(path_clone):
+        Repo.clone_from("https://github.com/ultralytics/yolov5.git", path_clone)
 
     path_imgs_scraped_clean_pred = path_base + "/data/testset/imgs_scraped_clean_pred"
     if os.path.exists(path_imgs_scraped_clean_pred):
