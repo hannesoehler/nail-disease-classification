@@ -3,7 +3,7 @@ import wandb
 import pandas as pd
 from utils.torch_utils import seed_torch, use_gpu
 from utils.wandb import use_wandb
-from configs.config import CFG
+from configs.train_config import CFG
 from utils.data import construct_train_df, create_fold_valid_set, create_kfolds
 from train_val_fn import train_loop
 from utils.metrics import print_loss_and_metrics

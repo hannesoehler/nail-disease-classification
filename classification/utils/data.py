@@ -52,7 +52,6 @@ def construct_train_df(image_paths, train=True):
     train_df = pd.DataFrame(images_lst, columns=['image_path', 'disease', 'label', 'image_folder'])
     CFG.class_dict = class_dict
     print(train_df.disease.value_counts())
-    print(train_df.iloc[-1]['image_folder'])
     return train_df, class_dict
 
 
@@ -68,6 +67,7 @@ def create_fold_valid_set(df):
     if CFG.train_with_e_dataset == False:
         df = df[df.apply(lambda row: 'Virtual E Dataset' not in row['image_folder'] or row['fold']==0, axis=1)]
     return df
+
 
 def create_kfolds(df, n_fold):
     gkf = StratifiedGroupKFold(n_splits=n_fold, shuffle=True, random_state=CFG.seed)
