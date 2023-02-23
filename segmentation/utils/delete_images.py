@@ -1,5 +1,3 @@
-#%% Image embedding
-
 import os
 import torch
 import torchvision.models as models
@@ -139,26 +137,36 @@ class Img2Vec:  # https://github.com/christiansafka/img2vec
 
 
 def cosine_similarity(a, b):
+
+    """Cosine similarity between vectors a and b
+
+    Args:
+        a: vector a
+        b: vector b
+
+    Returns:
+        cosine similarity between a and b
+    """
+
     return dot(a, b) / (norm(a) * norm(b))
 
 
-def delete_duplicate_images(dir_name="data/testset/imgs_scraped_clean"):
+def delete_duplicate_images(path, similarity_thesh):
 
-    # Initialize image 2 vector model without GPU
+    """Delete duplicate images from a directory using cosine similarity
+
+    Args:
+        path: path to directory containing images
+        similarity_thesh: threshold for cosine similarity between images
+    """
+
+    # Initialize Img2Vec without GPU
     img2vec = Img2Vec(cuda=False)
-
-    # path where images are located
-    path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), dir_name
-    )
 
     # n images in directory
     n_total = len(os.listdir(path))
 
     # Set up dictionary to save image names (keys) and embeddings, i.e. vectors (values)
-    # get directories in path without hidden directories
-    dirs = [d for d in os.listdir(path) if not d.startswith(".")]
-
     embeddings_dictionary = {}
     imag_names = []
     for index, imag in enumerate(os.listdir(path)):
@@ -179,31 +187,33 @@ def delete_duplicate_images(dir_name="data/testset/imgs_scraped_clean"):
                     vector, vector_2
                 )
 
-    # Get all the pairs with a cosine similarity > 0.99999 and delete the duplicates
+    # Get all the pairs with a cosine similarity greater than specified
+    # threshold and delete the duplicates
     duplicates = []
     for image_name, vector in pairwise_similarities.items():
         for image_name_2, similarity in vector.items():
-            if similarity > 0.99999:
-                # print([image_name, image_name_2, similarity)
+            if similarity > similarity_thesh:
                 duplicates.append(
                     [image_name, image_name_2]
                 )  # list of duplicate pair, append to duplicates list
 
-    # sort the list of duplicate pairs per pair, this is done to keep one exemplar of each image
+    # sort the list of duplicate pairs per pair (to keep one exemplar of each
+    # image)
     duplicates_sorted = [sorted(x) for x in duplicates]
 
     duplicates_final_A = [x[0] for x in duplicates_sorted]
     duplicates_final_B = [x[1] for x in duplicates_sorted]
 
-    # delete only the second element of each list (using duplicates_final_B) to keep one exemplar of each image
-
+    # delete only the second element of each list (using duplicates_final_B) to
+    # keep one exemplar of each image
     n_deleted = 0
     for index, file in enumerate(duplicates_final_B):
 
         # print all ducplicate pairs
         print("Duplicates: ", file, " ", duplicates_final_A[index])
 
-        # delete one element; some files are not deleted, this is because they are already deleted in a previous iteration
+        # delete one element; some files are not deleted, this is because they
+        # are already deleted in a previous iteration
         try:
             os.remove(path + "/" + file)
             print("---> deleting file: ", file)
@@ -216,16 +226,24 @@ def delete_duplicate_images(dir_name="data/testset/imgs_scraped_clean"):
 
 
 def delete_small_images(
+    path,
     min_width=85,
     min_height=85,
-    dir_name="data/testset/imgs_scraped_clean",
     return_del_filenames=False,
 ):
 
-    # function for deleting very small images (less than 100 pixels)
-    path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), dir_name
-    )
+    """Delete small images from a directory
+
+    Args:
+        path: path to directory containing images
+        min_width: minimum width of image
+        min_height: minimum height of image
+        return_del_filenames: if True, return list of deleted filenames
+
+    Returns:
+        file_name_deleted: list of deleted filenames
+    """
+
     n_total = len(os.listdir(path))
     n_deleted = 0
     file_name_deleted = []
@@ -234,31 +252,31 @@ def delete_small_images(
             img = Image.open(path + "/" + file)
             width, height = img.size
             if width < min_width or height < min_height:
-                # save image name to folder
-                # img.save(path + "/" + "small" + "/" + file, "JPEG")
                 os.remove(path + "/" + file)
                 print("---> deleting file: ", file)
                 n_deleted = n_deleted + 1
                 file_name_deleted.append(file)
         except:
             continue
-
     print("----------------------------------------------")
     print(n_deleted, " out of ", n_total, " images deleted")
-
     if return_del_filenames == True:
         return file_name_deleted
 
 
 def delete_extreme_aspect_ratio_images(
+    path,
     max_aspect_ratio=2.0,
     min_aspect_ratio=0.5,
-    dir_name="data/testset/imgs_scraped_clean",
 ):
+    """Delete images with extreme aspect ratio from a directory
 
-    path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), dir_name
-    )
+    Args:
+        path: path to directory containing images
+        max_aspect_ratio: maximum aspect ratio of image
+        min_aspect_ratio: minimum aspect ratio of image
+    """
+
     n_total = len(os.listdir(path))
     n_deleted = 0
     for file in os.listdir(path):
@@ -272,21 +290,26 @@ def delete_extreme_aspect_ratio_images(
                 n_deleted = n_deleted + 1
         except:
             continue
-
     print("----------------------------------------------")
     print(n_deleted, " out of ", n_total, " images deleted")
 
 
 def delete_txt_files_for_del_images(
-    file_names_to_delete=[],
-    dir_name="data/testset/txt_cropped",
+    file_names_to_delete,
+    path,
     return_del_filenames=False,
 ):
 
-    # function for deleting very small images (less than 100 pixels)
-    path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), dir_name
-    )
+    """Delete txt files for images that have been deleted
+
+    Args:
+        file_names_to_delete: list of file names to delete
+        path: path to directory containing images
+        return_del_filenames: if True, return list of deleted filenames
+
+    Returns:
+        file_name_deleted: list of deleted filenames
+    """
 
     n_deleted = 0
     file_name_deleted = []
@@ -296,9 +319,7 @@ def delete_txt_files_for_del_images(
         print("---> deleting file: ", txtfile)
         n_deleted = n_deleted + 1
         file_name_deleted.append(txtfile)
-
     print("----------------------------------------------")
     print(n_deleted, " txt files deleted")
-
     if return_del_filenames == True:
         return file_name_deleted
